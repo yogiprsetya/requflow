@@ -14,13 +14,18 @@ export function PlatformNavbar() {
         </div>
       </div>
 
-      <div className="flex items-center gap-1.5">
-        <Button variant="ghost" size="icon" aria-label="Notifications">
-          <Bell />
-        </Button>
-        <Avatar size="sm" aria-label="Account menu">
-          <AvatarFallback>YU</AvatarFallback>
-        </Avatar>
+      <div className="flex items-center gap-4">
+        <Button size="lg">Import Spec</Button>
+
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" aria-label="Notifications">
+            <Bell />
+          </Button>
+
+          <Avatar size="sm" aria-label="Account menu">
+            <AvatarFallback>YU</AvatarFallback>
+          </Avatar>
+        </div>
       </div>
     </header>
   );

@@ -1,11 +1,11 @@
-import { PlatformNavbar } from '~/app/(platform)/navbar';
-import { PlatformSidebar } from '~/app/(platform)/sidebar';
+import { PlatformNavbar } from '~/components/layout/navbar';
+import { PlatformSidebar } from '~/components/layout/sidebar';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { Zalando_Sans, Merriweather, IBM_Plex_Mono } from 'next/font/google';
 import '../globals.css';
 import { cn } from '~/lib/css';
-import { Sidedock } from './sidedock';
+import { Sidedock } from '../../components/layout/sidedock';
 
 const fontSans = Zalando_Sans({
   subsets: ['latin'],
