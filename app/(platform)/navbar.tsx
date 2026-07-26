@@ -2,7 +2,7 @@ import { Bell } from 'lucide-react';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { ImportSpecDialog } from '~/app/(platform)/import-spec-dialog';
-import { SidebarTrigger } from '../ui/sidebar';
+import { SidebarTrigger } from '../../components/ui/sidebar';
 
 export function PlatformNavbar() {
   return (

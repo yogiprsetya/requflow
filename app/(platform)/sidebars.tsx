@@ -1,7 +1,7 @@
 'use client';
 
-import { FolderKanban, LayoutDashboard, Search, Sparkles } from 'lucide-react';
-import { Input } from '~/components/ui/input';
+import { FolderKanban, LayoutDashboard, Sparkles } from 'lucide-react';
+import { SearchField } from '~/components/common/search-field';
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +14,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '~/components/ui/sidebar';
-import { cn } from '~/lib/css';
 
 const primaryNavigation = [
   { label: 'Overview', icon: LayoutDashboard, active: true },
@@ -43,15 +42,7 @@ export const PlatformSidebar = () => {
           </div>
         </div>
 
-        <label className="relative block w-full">
-          <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
-          <Input
-            aria-label="Search"
-            placeholder={!open ? '' : 'Search'}
-            disabled={!open}
-            className={cn(!open ? 'w-8' : 'pl-8', 'h-8')}
-          />
-        </label>
+        <SearchField collapsed={!open} />
       </SidebarHeader>
 
       <SidebarContent>

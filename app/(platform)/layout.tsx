@@ -1,9 +1,9 @@
-import { PlatformNavbar } from '~/components/layout/navbar';
-import { PlatformSidebar } from '~/components/layout/platform-sidebar';
+import { PlatformNavbar } from '~/app/(platform)/navbar';
+import { PlatformSidebar } from '~/app/(platform)/sidebars';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
 import '../globals.css';
-import { Sidedock } from '~/components/layout/sidedock';
+import { Sidedock } from '~/app/(platform)/sidedock';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
