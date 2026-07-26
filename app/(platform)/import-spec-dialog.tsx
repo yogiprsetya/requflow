@@ -88,23 +88,33 @@ export function ImportSpecDialog() {
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Import OpenAPI spec</DialogTitle>
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <FileUp aria-hidden="true" />
+            </div>
 
-          <DialogDescription>
-            Add endpoints to a workspace from an OpenAPI JSON or YAML document.
-          </DialogDescription>
+            <div className="flex flex-col gap-1">
+              <DialogTitle>Import OpenAPI spec</DialogTitle>
+
+              <DialogDescription>
+                Add endpoints from an OpenAPI JSON or YAML document.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
 
         <Tabs
           value={method}
-          defaultValue={method}
           orientation="vertical"
           onValueChange={(value) => {
             setMethod(value as ImportMethod);
             setError('');
           }}
         >
-          <TabsList className="w-full" aria-label="Import source">
+          <TabsList
+            className="grid h-10 w-full grid-cols-2"
+            aria-label="Import source"
+          >
             <TabsTrigger value="file">
               <FileUp data-icon="inline-start" />
               Upload file
@@ -116,24 +126,45 @@ export function ImportSpecDialog() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="file" className="mt-3">
-            <Label className="flex flex-col gap-1.5" htmlFor="openapi-file">
-              OpenAPI file
+          <TabsContent
+            value="file"
+            className="bg-muted/20 mt-3 rounded-lg border p-4"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="openapi-file">OpenAPI file</Label>
+                <span className="text-muted-foreground text-xs">
+                  Select a JSON, YAML, or YML file to upload.
+                </span>
+              </div>
+
               <Input
                 id="openapi-file"
                 type="file"
                 accept=".json,.yaml,.yml,application/json,application/yaml,text/yaml"
                 onChange={handleFileChange}
               />
-              <span className="text-muted-foreground text-xs font-normal">
-                {file ? file.name : 'JSON, YAML, or YML up to 10 MB'}
-              </span>
-            </Label>
+
+              {file && (
+                <p className="text-muted-foreground truncate text-xs">
+                  Selected: {file.name}
+                </p>
+              )}
+            </div>
           </TabsContent>
 
-          <TabsContent value="url" className="mt-3">
-            <Label className="flex flex-col gap-1.5" htmlFor="openapi-url">
-              OpenAPI URL
+          <TabsContent
+            value="url"
+            className="bg-muted/20 mt-3 rounded-lg border p-4"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="openapi-url">OpenAPI URL</Label>
+                <span className="text-muted-foreground text-xs">
+                  Use a publicly accessible HTTP or HTTPS URL.
+                </span>
+              </div>
+
               <Input
                 id="openapi-url"
                 type="url"
@@ -144,33 +175,37 @@ export function ImportSpecDialog() {
                   setError('');
                 }}
               />
-            </Label>
+            </div>
           </TabsContent>
         </Tabs>
 
-        <div className="flex flex-col gap-4">
-          <Label
-            className="flex flex-col gap-1.5 text-xs font-medium"
-            htmlFor="workspace-target"
-          >
-            Workspace target
-            <Select
-              value={workspace}
-              onValueChange={(value) => setWorkspace(value ?? 'current')}
-            >
-              <SelectTrigger id="workspace-target" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="workspace-target">Workspace target</Label>
+            <span className="text-muted-foreground text-xs">
+              Choose where the imported endpoints should be added.
+            </span>
+          </div>
 
-              <SelectContent>
-                <SelectItem value="current">Current workspace</SelectItem>
-                <SelectItem value="new">New workspace</SelectItem>
-              </SelectContent>
-            </Select>
-          </Label>
+          <Select
+            value={workspace}
+            onValueChange={(value) => setWorkspace(value ?? 'current')}
+          >
+            <SelectTrigger id="workspace-target" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="current">Current workspace</SelectItem>
+              <SelectItem value="new">New workspace</SelectItem>
+            </SelectContent>
+          </Select>
 
           {error && (
-            <p className="text-destructive text-xs" role="alert">
+            <p
+              className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-xs"
+              role="alert"
+            >
               {error}
             </p>
           )}
