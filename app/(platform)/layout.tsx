@@ -1,6 +1,6 @@
 import { PlatformNavbar } from '~/app/(platform)/navbar';
 import { PlatformSidebar } from '~/app/(platform)/sidebar';
-import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar';
+import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { Zalando_Sans, Merriweather, IBM_Plex_Mono } from 'next/font/google';
 import '../globals.css';
@@ -37,21 +37,21 @@ export default function PlatformLayout({
     <html
       lang="en"
       className={cn(
-        'h-full font-sans antialiased',
+        'h-svh overflow-hidden font-sans antialiased',
         fontSans.variable,
         fontSerif.variable,
         fontMono.variable
       )}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="flex h-svh max-h-svh flex-col overflow-hidden">
         <SidebarProvider>
-          <div className="bg-background min-h-svh w-full">
+          <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
             <PlatformNavbar />
             <Sidedock />
             <PlatformSidebar />
-            <SidebarInset className="min-w-0">
-              <div className="flex-1 p-4 md:p-6">{children}</div>
-            </SidebarInset>
+            <main className="ml-83.5 h-full w-[calc(100%-334px)]">
+              {children}
+            </main>
           </div>
         </SidebarProvider>
       </body>

@@ -1,11 +1,4 @@
-import {
-  CircleHelp,
-  FolderKanban,
-  LayoutDashboard,
-  Search,
-  Settings,
-  Sparkles,
-} from 'lucide-react';
+import { FolderKanban, LayoutDashboard, Search, Sparkles } from 'lucide-react';
 import { Input } from '~/components/ui/input';
 import {
   Sidebar,
@@ -29,7 +22,7 @@ export function PlatformSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="md:top-14! md:left-12! md:h-[calc(100svh-3.5rem)]!"
+      className="w-72 md:top-14! md:left-12! md:h-[calc(100svh-3.5rem)]!"
     >
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
