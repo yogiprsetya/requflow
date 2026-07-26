@@ -1,8 +1,6 @@
 'use client';
 
-import { useState } from 'react';
 import { FileUp, Link2 } from 'lucide-react';
-
 import {
   Dialog,
   DialogContent,
@@ -22,112 +20,31 @@ import {
 } from '~/components/ui/select';
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { validateOpenApiSpec } from '~/lib/openapi-validator';
-
-const acceptedExtensions = /\.(json|ya?ml)$/i;
-const importedSpecStorageKey = 'requflow:openapi-spec';
-
-type ImportMethod = 'file' | 'url';
+import { useImportSpec } from './use-import-spec';
 
 export function ImportSpecDialog() {
-  const [open, setOpen] = useState(false);
-  const [method, setMethod] = useState<ImportMethod>('file');
-  const [file, setFile] = useState<File | null>(null);
-  const [url, setUrl] = useState('');
-  const [workspace, setWorkspace] = useState('current');
-  const [error, setError] = useState('');
-  const [isImporting, setIsImporting] = useState(false);
-
-  const hasSource = method === 'file' ? file !== null : url.trim().length > 0;
-
-  function reset() {
-    setMethod('file');
-    setFile(null);
-    setUrl('');
-    setWorkspace('current');
-    setError('');
-    setIsImporting(false);
-  }
-
-  function handleOpenChange(nextOpen: boolean) {
-    setOpen(nextOpen);
-    if (!nextOpen) reset();
-  }
-
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const nextFile = event.target.files?.[0] ?? null;
-    setError('');
-
-    if (nextFile && !acceptedExtensions.test(nextFile.name)) {
-      setFile(null);
-      setError(
-        'Choose an OpenAPI file with a .json, .yaml, or .yml extension.'
-      );
-      return;
-    }
-
-    setFile(nextFile);
-  }
-
-  async function handleImport() {
-    if (!hasSource) return;
-
-    setError('');
-    setIsImporting(true);
-
-    try {
-      let source: string;
-
-      if (method === 'file') {
-        source = await file!.text();
-      } else {
-        let parsedUrl: URL;
-
-        try {
-          parsedUrl = new URL(url);
-          if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error();
-        } catch {
-          throw new Error('Enter a valid HTTP or HTTPS URL.');
-        }
-
-        const response = await fetch(parsedUrl);
-        if (!response.ok) {
-          throw new Error(
-            `Unable to fetch the spec (HTTP ${response.status}).`
-          );
-        }
-
-        source = await response.text();
-      }
-
-      const result = validateOpenApiSpec(source);
-      if (!result.valid || !result.spec) {
-        throw new Error(
-          result.errors
-            .map(({ path, message }) =>
-              path ? `${path}: ${message}` : message
-            )
-            .join(' ')
-        );
-      }
-
-      localStorage.setItem(importedSpecStorageKey, JSON.stringify(result.spec));
-      setOpen(false);
-      reset();
-    } catch (importError) {
-      setError(
-        importError instanceof Error
-          ? importError.message
-          : 'Unable to import the OpenAPI spec.'
-      );
-    } finally {
-      setIsImporting(false);
-    }
-  }
+  const {
+    error,
+    file,
+    handleFileChange,
+    handleImport,
+    handleMethodChange,
+    handleOpen,
+    handleOpenChange,
+    handleCancel,
+    handleUrlChange,
+    hasSource,
+    isImporting,
+    method,
+    open,
+    setWorkspace,
+    url,
+    workspace,
+  } = useImportSpec();
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button onClick={() => setOpen(true)}>Import Spec</Button>
+      <Button onClick={handleOpen}>Import Spec</Button>
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -149,10 +66,7 @@ export function ImportSpecDialog() {
         <Tabs
           value={method}
           orientation="vertical"
-          onValueChange={(value) => {
-            setMethod(value as ImportMethod);
-            setError('');
-          }}
+          onValueChange={handleMethodChange}
         >
           <TabsList
             className="grid h-10 w-full grid-cols-2"
@@ -213,10 +127,7 @@ export function ImportSpecDialog() {
                 type="url"
                 placeholder="https://example.com/openapi.yaml"
                 value={url}
-                onChange={(event) => {
-                  setUrl(event.target.value);
-                  setError('');
-                }}
+                onChange={(event) => handleUrlChange(event.target.value)}
               />
             </div>
           </TabsContent>
@@ -255,7 +166,7 @@ export function ImportSpecDialog() {
         </div>
 
         <DialogFooter>
-          <Button size="lg" variant="outline" onClick={() => setOpen(false)}>
+          <Button size="lg" variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
 
