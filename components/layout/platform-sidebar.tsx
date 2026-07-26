@@ -1,3 +1,5 @@
+'use client';
+
 import { FolderKanban, LayoutDashboard, Search, Sparkles } from 'lucide-react';
 import { Input } from '~/components/ui/input';
 import {
@@ -11,18 +13,23 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '~/components/ui/sidebar';
+import { cn } from '~/lib/css';
 
 const primaryNavigation = [
   { label: 'Overview', icon: LayoutDashboard, active: true },
   { label: 'Projects', icon: FolderKanban },
 ];
 
-export function PlatformSidebar() {
+export const PlatformSidebar = () => {
+  const { open } = useSidebar();
+
   return (
     <Sidebar
       collapsible="icon"
-      className="w-72 md:top-14! md:left-12! md:h-[calc(100svh-3.5rem)]!"
+      variant="sidebar"
+      className="md:top-14 md:left-12!"
     >
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
@@ -41,8 +48,9 @@ export function PlatformSidebar() {
           <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
           <Input
             aria-label="Search"
-            placeholder="Search"
-            className="h-8 pl-8"
+            placeholder={!open ? '' : 'Search'}
+            disabled={!open}
+            className={cn(!open ? 'w-8' : 'pl-8', 'h-8')}
           />
         </label>
       </SidebarHeader>
@@ -94,4 +102,4 @@ export function PlatformSidebar() {
       </SidebarFooter>
     </Sidebar>
   );
-}
+};

@@ -1,5 +1,5 @@
 import { PlatformNavbar } from '~/components/layout/navbar';
-import { PlatformSidebar } from '~/components/layout/sidebar';
+import { PlatformSidebar } from '~/components/layout/platform-sidebar';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
 import { Zalando_Sans, Merriweather, IBM_Plex_Mono } from 'next/font/google';
@@ -47,11 +47,12 @@ export default function PlatformLayout({
         <SidebarProvider>
           <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
             <PlatformNavbar />
-            <Sidedock />
-            <PlatformSidebar />
-            <main className="ml-83.5 h-full w-[calc(100%-334px)]">
-              {children}
-            </main>
+
+            <div className="flex">
+              <Sidedock />
+              <PlatformSidebar />
+              <main className="h-full w-full grow p-2">{children}</main>
+            </div>
           </div>
         </SidebarProvider>
       </body>

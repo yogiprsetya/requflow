@@ -1,6 +1,7 @@
 import { Bell } from 'lucide-react';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
+import { ImportSpecDialog } from '~/app/(platform)/import-spec-dialog';
 
 export function PlatformNavbar() {
   return (
@@ -15,7 +16,7 @@ export function PlatformNavbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button size="lg">Import Spec</Button>
+        <ImportSpecDialog />
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" aria-label="Notifications">
