@@ -22,8 +22,10 @@ import {
 } from '~/components/ui/select';
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { validateOpenApiSpec } from '~/lib/openapi-validator';
 
 const acceptedExtensions = /\.(json|ya?ml)$/i;
+const importedSpecStorageKey = 'requflow:openapi-spec';
 
 type ImportMethod = 'file' | 'url';
 
@@ -34,6 +36,7 @@ export function ImportSpecDialog() {
   const [url, setUrl] = useState('');
   const [workspace, setWorkspace] = useState('current');
   const [error, setError] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   const hasSource = method === 'file' ? file !== null : url.trim().length > 0;
 
@@ -43,6 +46,7 @@ export function ImportSpecDialog() {
     setUrl('');
     setWorkspace('current');
     setError('');
+    setIsImporting(false);
   }
 
   function handleOpenChange(nextOpen: boolean) {
@@ -65,21 +69,60 @@ export function ImportSpecDialog() {
     setFile(nextFile);
   }
 
-  function handleImport() {
+  async function handleImport() {
     if (!hasSource) return;
 
-    if (method === 'url') {
-      try {
-        const parsedUrl = new URL(url);
-        if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error();
-      } catch {
-        setError('Enter a valid HTTP or HTTPS URL.');
-        return;
-      }
-    }
+    setError('');
+    setIsImporting(true);
 
-    setOpen(false);
-    reset();
+    try {
+      let source: string;
+
+      if (method === 'file') {
+        source = await file!.text();
+      } else {
+        let parsedUrl: URL;
+
+        try {
+          parsedUrl = new URL(url);
+          if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error();
+        } catch {
+          throw new Error('Enter a valid HTTP or HTTPS URL.');
+        }
+
+        const response = await fetch(parsedUrl);
+        if (!response.ok) {
+          throw new Error(
+            `Unable to fetch the spec (HTTP ${response.status}).`
+          );
+        }
+
+        source = await response.text();
+      }
+
+      const result = validateOpenApiSpec(source);
+      if (!result.valid || !result.spec) {
+        throw new Error(
+          result.errors
+            .map(({ path, message }) =>
+              path ? `${path}: ${message}` : message
+            )
+            .join(' ')
+        );
+      }
+
+      localStorage.setItem(importedSpecStorageKey, JSON.stringify(result.spec));
+      setOpen(false);
+      reset();
+    } catch (importError) {
+      setError(
+        importError instanceof Error
+          ? importError.message
+          : 'Unable to import the OpenAPI spec.'
+      );
+    } finally {
+      setIsImporting(false);
+    }
   }
 
   return (
@@ -216,8 +259,12 @@ export function ImportSpecDialog() {
             Cancel
           </Button>
 
-          <Button size="lg" disabled={!hasSource} onClick={handleImport}>
-            Import
+          <Button
+            size="lg"
+            disabled={!hasSource || isImporting}
+            onClick={handleImport}
+          >
+            {isImporting ? 'Validating…' : 'Import'}
           </Button>
         </DialogFooter>
       </DialogContent>

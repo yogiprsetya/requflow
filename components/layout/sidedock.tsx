@@ -8,7 +8,7 @@ export const Sidedock = () => {
       aria-label="Quick navigation"
       className="bg-sidebar border-secondary fixed top-14 bottom-0 left-0 z-20 hidden w-12 flex-col items-center border-r py-3 md:flex"
     >
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-1">
         <SidebarTrigger aria-label="Toggle navigation sidebar" />
 
         <Button type="button" size="icon-lg" aria-label="Open quick create">

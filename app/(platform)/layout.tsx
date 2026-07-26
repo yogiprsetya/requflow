@@ -2,26 +2,8 @@ import { PlatformNavbar } from '~/components/layout/navbar';
 import { PlatformSidebar } from '~/components/layout/platform-sidebar';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
-import { Zalando_Sans, Merriweather, IBM_Plex_Mono } from 'next/font/google';
 import '../globals.css';
-import { cn } from '~/lib/css';
-import { Sidedock } from '../../components/layout/sidedock';
-
-const fontSans = Zalando_Sans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-});
-
-const fontSerif = Merriweather({
-  subsets: ['latin'],
-  variable: '--font-serif',
-});
-
-const fontMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-mono',
-});
+import { Sidedock } from '~/components/layout/sidedock';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -34,15 +16,21 @@ export default function PlatformLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={cn(
-        'h-svh overflow-hidden font-sans antialiased',
-        fontSans.variable,
-        fontSerif.variable,
-        fontMono.variable
-      )}
-    >
+    <html lang="en" className="h-svh overflow-hidden antialiased">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+
       <body className="flex h-svh max-h-svh flex-col overflow-hidden">
         <SidebarProvider>
           <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
