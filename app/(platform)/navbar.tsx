@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { ImportSpecDialog } from '~/app/(platform)/import-spec-dialog';
 import { SidebarTrigger } from '../../components/ui/sidebar';
+import { WorkspaceSwitcher } from './workspace-switcher';
 
 export function PlatformNavbar() {
   return (
@@ -19,7 +20,11 @@ export function PlatformNavbar() {
       </div>
 
       <div className="flex items-center gap-4">
-        <ImportSpecDialog />
+        <div className="flex items-center gap-2">
+          <WorkspaceSwitcher />
+
+          <ImportSpecDialog />
+        </div>
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" aria-label="Notifications">

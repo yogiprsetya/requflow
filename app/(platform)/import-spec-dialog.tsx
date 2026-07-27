@@ -1,6 +1,6 @@
 'use client';
 
-import { FileUp, Link2 } from 'lucide-react';
+import { FileUp, FolderInput, Link2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -44,16 +44,18 @@ export function ImportSpecDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button onClick={handleOpen}>Import Spec</Button>
+      <Button onClick={handleOpen}>
+        <FolderInput /> Spec
+      </Button>
 
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
+        <DialogHeader className="mb-4">
           <div className="flex items-start gap-3">
             <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-              <FileUp aria-hidden="true" />
+              <FolderInput aria-hidden="true" />
             </div>
 
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col">
               <DialogTitle>Import OpenAPI spec</DialogTitle>
 
               <DialogDescription>

@@ -30,6 +30,8 @@ import {
 } from '~/components/ui/sidebar';
 import { useLocalSpec, type ApiEndpoint } from './use-local-spec';
 import { cn } from '~/lib/css';
+import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
+import { Separator } from '~/components/ui/separator';
 
 export const PlatformSidebar = () => {
   const { open } = useSidebar();
@@ -41,18 +43,10 @@ export const PlatformSidebar = () => {
       variant="sidebar"
       className="md:top-14 md:left-12!"
     >
-      <SidebarHeader className="mb-4">
-        <div className="flex items-center gap-2 px-2 py-1.5 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <div className="bg-sidebar-primary text-sidebar-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold">
-            R
-          </div>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-xs font-semibold">Workspace</p>
-            <p className="text-sidebar-foreground/60 truncate text-[0.65rem]">
-              Personal space
-            </p>
-          </div>
-        </div>
+      <SidebarHeader className="mt-1 mb-4">
+        <WorkspaceBreadcrumb />
+
+        <Separator className="bg-secondary mb-1" />
 
         <SearchField collapsed={!open} />
       </SidebarHeader>
@@ -64,7 +58,9 @@ export const PlatformSidebar = () => {
               <EmptyMedia variant="icon">
                 <FileText aria-hidden="true" />
               </EmptyMedia>
+
               <EmptyTitle>No endpoints yet</EmptyTitle>
+
               <EmptyDescription>
                 Import an OpenAPI spec to explore its endpoints here.
               </EmptyDescription>
