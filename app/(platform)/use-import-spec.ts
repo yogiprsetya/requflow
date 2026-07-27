@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { validateOpenApiSpec } from '~/lib/openapi-validator';
-import { IMPORTED_SPEC_STORAGE_KEY } from './constant';
+import {
+  IMPORTED_SPEC_STORAGE_KEY,
+  IMPORTED_SPEC_UPDATED_EVENT,
+} from './constant';
 
 const acceptedExtensions = /\.(json|ya?ml)$/i;
 
@@ -110,6 +113,7 @@ export function useImportSpec() {
         IMPORTED_SPEC_STORAGE_KEY,
         JSON.stringify(result.spec)
       );
+      window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
       reset();
     } catch (importError) {

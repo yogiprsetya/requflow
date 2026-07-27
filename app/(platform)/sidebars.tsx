@@ -1,8 +1,15 @@
 'use client';
 
-import { Folder, Sparkles } from 'lucide-react';
+import { FileText, Folder, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '~/components/ui/empty';
 import {
   Collapsible,
   CollapsibleContent,
@@ -51,46 +58,62 @@ export const PlatformSidebar = () => {
       </SidebarHeader>
 
       <SidebarContent>
-        {apiGroups.map((group) => (
-          <Collapsible key={group.tag} className="group/collapsible">
-            <SidebarGroup className="py-0">
-              <CollapsibleTrigger className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors group-data-[collapsible=icon]:hidden">
-                <Folder className="size-4" />
+        {apiGroups.length === 0 ? (
+          <Empty className="gap-3 px-4 py-8 group-data-[collapsible=icon]:hidden">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <FileText aria-hidden="true" />
+              </EmptyMedia>
+              <EmptyTitle>No endpoints yet</EmptyTitle>
+              <EmptyDescription>
+                Import an OpenAPI spec to explore its endpoints here.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          apiGroups.map((group) => (
+            <Collapsible key={group.tag} className="group/collapsible">
+              <SidebarGroup className="py-0">
+                <CollapsibleTrigger className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors group-data-[collapsible=icon]:hidden">
+                  <Folder className="size-4" />
 
-                <SidebarGroupLabel className="h-auto flex-1 p-0">
-                  {group.tag}
-                </SidebarGroupLabel>
-              </CollapsibleTrigger>
+                  <SidebarGroupLabel className="h-auto flex-1 p-0">
+                    {group.tag}
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
 
-              <CollapsibleContent className="ml-2">
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.endpoints.map((endpoint) => (
-                      <SidebarMenuItem
-                        key={`${endpoint.method}:${endpoint.path}`}
-                      >
-                        <SidebarMenuButton
-                          tooltip={`${endpoint.method.toUpperCase()} ${endpoint.path}`}
+                <CollapsibleContent className="ml-2">
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      {group.endpoints.map((endpoint) => (
+                        <SidebarMenuItem
+                          key={`${endpoint.method}:${endpoint.path}`}
                         >
-                          <Badge
-                            className={cn(
-                              'h-4.5 w-11 text-[0.6rem] font-semibold uppercase opacity-70',
-                              methodBadgeClass(endpoint.method)
-                            )}
+                          <SidebarMenuButton
+                            tooltip={`${endpoint.method.toUpperCase()} ${endpoint.path}`}
                           >
-                            {endpoint.method}
-                          </Badge>
+                            <Badge
+                              className={cn(
+                                'h-4.5 w-11 text-[0.6rem] font-semibold uppercase opacity-70',
+                                methodBadgeClass(endpoint.method)
+                              )}
+                            >
+                              {endpoint.method}
+                            </Badge>
 
-                          <span title={endpoint.summary}>{endpoint.path}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ))}
+                            <span title={endpoint.summary}>
+                              {endpoint.path}
+                            </span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          ))
+        )}
       </SidebarContent>
 
       <SidebarFooter>
