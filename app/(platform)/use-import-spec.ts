@@ -1,9 +1,8 @@
 import { useState } from 'react';
-
 import { validateOpenApiSpec } from '~/lib/openapi-validator';
+import { IMPORTED_SPEC_STORAGE_KEY } from './constant';
 
 const acceptedExtensions = /\.(json|ya?ml)$/i;
-const importedSpecStorageKey = 'requflow:openapi-spec';
 
 export type ImportMethod = 'file' | 'url';
 
@@ -107,7 +106,10 @@ export function useImportSpec() {
         );
       }
 
-      localStorage.setItem(importedSpecStorageKey, JSON.stringify(result.spec));
+      localStorage.setItem(
+        IMPORTED_SPEC_STORAGE_KEY,
+        JSON.stringify(result.spec)
+      );
       setOpen(false);
       reset();
     } catch (importError) {
