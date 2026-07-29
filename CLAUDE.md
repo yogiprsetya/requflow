@@ -53,4 +53,9 @@ For multi-step tasks, state a brief plan:
 
 These guidelines are working if: fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
+5. Code convetion
+
+- Use only arrow funtion
+- Add space between markup block for breath
+
 Spec Reference: @SPEC.md
