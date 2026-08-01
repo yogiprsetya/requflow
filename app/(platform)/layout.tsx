@@ -6,6 +6,7 @@ import '../globals.css';
 import { Sidedock } from '~/app/(platform)/sidedock';
 import { Geist } from 'next/font/google';
 import { cn } from '~/lib/css';
+import { ThemeProvider } from '~/components/theme-provider';
 
 const fontSans = Geist({
   subsets: ['latin'],
@@ -23,22 +24,28 @@ export default function PlatformLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn(fontSans.variable, 'h-svh overflow-hidden antialiased')}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn(fontSans.variable, 'h-svh overflow-hidden antialiased')}
+    >
       <body className="flex h-svh max-h-svh flex-col overflow-hidden">
-        <SidebarProvider>
-          <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
-            <PlatformNavbar />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <SidebarProvider>
+            <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
+              <PlatformNavbar />
 
-            <div className="flex h-full">
-              <div className="flex w-108 flex-none justify-between">
-                <Sidedock />
-                <PlatformSidebar />
+              <div className="flex h-full">
+                <div className="flex w-108 flex-none justify-between">
+                  <Sidedock />
+                  <PlatformSidebar />
+                </div>
+
+                <main className="h-full min-w-0 flex-1">{children}</main>
               </div>
-
-              <main className="h-full min-w-0 flex-1">{children}</main>
             </div>
-          </div>
-        </SidebarProvider>
+          </SidebarProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
