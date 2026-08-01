@@ -1,3 +1,5 @@
+import Playground from './playground';
+
 export default function PlatformPage() {
-  return <main>Test main</main>;
+  return <Playground />;
 }

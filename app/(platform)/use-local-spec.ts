@@ -1,27 +1,8 @@
 import { useEffect, useState } from 'react';
-import {
-  IMPORTED_SPEC_STORAGE_KEY,
-  IMPORTED_SPEC_UPDATED_EVENT,
-} from './constant';
+import { httpMethods, IMPORTED_SPEC_STORAGE_KEY, IMPORTED_SPEC_UPDATED_EVENT } from './constant';
+import { ApiEndpoint } from './types';
 
-const httpMethods = [
-  'get',
-  'post',
-  'put',
-  'patch',
-  'delete',
-  'options',
-  'head',
-  'trace',
-] as const;
-
-export type ApiEndpoint = {
-  method: (typeof httpMethods)[number];
-  path: string;
-  summary?: string;
-};
-
-export type ApiGroup = {
+type ApiGroup = {
   tag: string;
   endpoints: ApiEndpoint[];
 };
@@ -51,8 +32,7 @@ export function useLocalSpec(): ApiGroup[] {
 
     loadGroups();
     window.addEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
-    return () =>
-      window.removeEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
+    return () => window.removeEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
   }, []);
 
   return apiGroups;
@@ -81,8 +61,7 @@ function groupEndpoints(paths: Record<string, unknown>): ApiGroup[] {
       endpoints.push({
         method,
         path,
-        summary:
-          typeof operation.summary === 'string' ? operation.summary : undefined,
+        summary: typeof operation.summary === 'string' ? operation.summary : undefined,
       });
       groups.set(tag, endpoints);
     }
