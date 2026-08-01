@@ -4,6 +4,13 @@ import { SidebarProvider } from '~/components/ui/sidebar';
 import type { Metadata } from 'next';
 import '../globals.css';
 import { Sidedock } from '~/app/(platform)/sidedock';
+import { Geist } from 'next/font/google';
+import { cn } from '~/lib/css';
+
+const fontSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -16,30 +23,19 @@ export default function PlatformLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-svh overflow-hidden antialiased">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Zalando+Sans:ital,wght@0,200..900;1,200..900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-
+    <html lang="en" className={cn(fontSans.variable, 'h-svh overflow-hidden antialiased')}>
       <body className="flex h-svh max-h-svh flex-col overflow-hidden">
         <SidebarProvider>
           <div className="bg-background flex h-full min-h-0 w-full flex-col overflow-hidden">
             <PlatformNavbar />
 
-            <div className="flex">
-              <Sidedock />
-              <PlatformSidebar />
-              <main className="h-full w-full grow p-2">{children}</main>
+            <div className="flex h-full">
+              <div className="flex w-108 flex-none justify-between">
+                <Sidedock />
+                <PlatformSidebar />
+              </div>
+
+              <main className="h-full min-w-0 flex-1">{children}</main>
             </div>
           </div>
         </SidebarProvider>
