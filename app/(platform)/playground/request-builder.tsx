@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Check, ChevronDown, Copy, KeyRound, Play, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -9,7 +9,6 @@ import { Label } from '~/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/css';
-import { ResponseViewer } from './response-viewer';
 import { ApiEndpointDetail, RequestParameter, SchemaObject } from '../types';
 import {
   DropdownMenu,
@@ -18,17 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-
-const methodStyles: Record<string, string> = {
-  get: 'text-emerald-600',
-  post: 'text-amber-600',
-  put: 'text-blue-600',
-  patch: 'text-violet-600',
-  delete: 'text-red-600',
-  options: 'text-cyan-600',
-  head: 'text-slate-600',
-  trace: 'text-pink-600',
-};
+import { methodTextClass } from '../utils';
 
 type KeyValue = { id: number; key: string; value: string; enabled: boolean };
 
@@ -60,27 +49,10 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
     }))
   );
   const [body, setBody] = useState(() => createBodyValue(endpoint.requestBody?.content?.[bodyMediaType]?.schema));
-  const [sent, setSent] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  const requestUrl = useMemo(() => {
-    let path = endpoint.path;
-    for (const parameter of pathParams) {
-      path = path.replace(
-        `{${parameter.name}}`,
-        encodeURIComponent(values[parameter.name] ?? `{${parameter.name}}`)
-      );
-    }
-    const search = queryParams
-      .filter((parameter) => values[parameter.name])
-      .map((parameter) => `${encodeURIComponent(parameter.name)}=${encodeURIComponent(values[parameter.name])}`)
-      .join('&');
-    return `${pathUrl.replace(/\/$/, '')}${path}${search ? `?${search}` : ''}`;
-  }, [pathUrl, endpoint.path, pathParams, queryParams, values]);
 
   const updateValue = (name: string, value: string) => {
     setValues((current) => ({ ...current, [name]: value }));
-    setSent(false);
   };
 
   const addHeader = () => {
@@ -89,7 +61,6 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
 
   const updateHeader = (id: number, field: 'key' | 'value' | 'enabled', value: string | boolean) => {
     setHeaders((current) => current.map((header) => (header.id === id ? { ...header, [field]: value } : header)));
-    setSent(false);
   };
 
   const removeHeader = (id: number) => setHeaders((current) => current.filter((header) => header.id !== id));
@@ -106,10 +77,7 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
         <div className="flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
-            className={cn(
-              'border-0 px-0 text-xs font-bold uppercase',
-              methodStyles[endpoint.method] ?? 'text-foreground'
-            )}
+            className={cn('border-0 px-0 text-xs font-bold uppercase', methodTextClass(endpoint.method))}
           >
             {endpoint.method}
           </Badge>
@@ -161,13 +129,7 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button
-          onClick={() => {
-            setSent(true);
-            setActiveTab('response');
-          }}
-          className="h-9 px-4"
-        >
+        <Button onClick={() => setActiveTab('response')} className="h-9 px-4">
           <Play data-icon="inline-start" />
           Send
         </Button>
@@ -194,12 +156,6 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
             <TabsTrigger value="auth" className="flex-none px-3">
               Auth
             </TabsTrigger>
-
-            {sent && (
-              <TabsTrigger value="response" className="flex-none px-3">
-                Response
-              </TabsTrigger>
-            )}
           </TabsList>
 
           <TabsContent value="params" className="space-y-5 p-5">
@@ -323,10 +279,6 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
               </p>
             </div>
           </TabsContent>
-
-          <TabsContent value="response" className="p-5">
-            <ResponseViewer url={requestUrl} method={endpoint.method} />
-          </TabsContent>
         </Tabs>
       </div>
     </section>
@@ -359,17 +311,20 @@ function ParameterSection({
                 {parameter.name}
                 {parameter.required && <span className="text-destructive ml-1">*</span>}
               </Label>
+
               <p className="text-muted-foreground mt-1 text-[11px]">
                 {parameter.description ??
                   `${parameter.schema?.type ?? 'string'}${parameter.schema?.format ? ` · ${parameter.schema.format}` : ''}`}
               </p>
             </div>
+
             <Input
               value={values[parameter.name] ?? ''}
               onChange={(event) => onChange(parameter.name, event.target.value)}
               placeholder={placeholderFor(parameter.schema)}
               aria-label={parameter.name}
             />
+
             {parameter.schema?.enum?.length ? (
               <Select
                 value={values[parameter.name] ?? ''}
@@ -378,6 +333,7 @@ function ParameterSection({
                 <SelectTrigger>
                   <SelectValue placeholder="Select value" />
                 </SelectTrigger>
+
                 <SelectContent>
                   {parameter.schema.enum.map((item) => (
                     <SelectItem key={String(item)} value={String(item)}>
@@ -417,15 +373,19 @@ function placeholderFor(schema?: SchemaObject): string {
       ? 'true'
       : 'Enter value';
 }
+
 function createBodyValue(schema?: SchemaObject): string {
   if (!schema) return '{}';
+
   const value = Object.fromEntries(
     Object.entries(schema.properties ?? {})
       .filter(([, property]) => !property.readOnly)
       .map(([key, property]) => [key, property.example ?? property.default ?? sampleValue(property)])
   );
+
   return JSON.stringify(schema.type === 'array' ? [sampleValue(schema.items)] : value, null, 2);
 }
+
 function sampleValue(schema?: SchemaObject): unknown {
   if (!schema) return '';
   if (schema.enum?.length) return schema.enum[0];
@@ -436,5 +396,6 @@ function sampleValue(schema?: SchemaObject): unknown {
     return Object.fromEntries(
       Object.entries(schema.properties ?? {}).map(([key, property]) => [key, sampleValue(property)])
     );
+
   return '';
 }

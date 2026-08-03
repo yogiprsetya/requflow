@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { FileText, Folder, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
@@ -28,15 +29,15 @@ import { methodBadgeClass } from './utils';
 export const PlatformSidebar = () => {
   const { open } = useSidebar();
   const apiGroups = useLocalSpec();
+  const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="md:top-14 md:left-12!">
       <SidebarHeader className="mt-1 mb-4">
         <WorkspaceBreadcrumb />
-
         <Separator className="bg-secondary mb-1" />
-
         <SearchField collapsed={!open} />
       </SidebarHeader>
 
@@ -55,7 +56,15 @@ export const PlatformSidebar = () => {
           </Empty>
         ) : (
           apiGroups.map((group) => (
-            <Collapsible key={group.tag} className="group/collapsible">
+            <Collapsible
+              key={group.tag}
+              open={
+                group.endpoints.some((endpoint) => activeEndpointId === `${endpoint.method}:${endpoint.path}`) ||
+                openGroups[group.tag] === true
+              }
+              onOpenChange={(open) => setOpenGroups((groups) => ({ ...groups, [group.tag]: open }))}
+              className="group/collapsible"
+            >
               <SidebarGroup className="py-0">
                 <CollapsibleTrigger className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors group-data-[collapsible=icon]:hidden">
                   <Folder className="size-4" />
@@ -69,6 +78,7 @@ export const PlatformSidebar = () => {
                       {group.endpoints.map((endpoint) => (
                         <SidebarMenuItem key={`${endpoint.method}:${endpoint.path}`}>
                           <SidebarMenuButton
+                            isActive={activeEndpointId === `${endpoint.method}:${endpoint.path}`}
                             tooltip={`${endpoint.method.toUpperCase()} ${endpoint.path}`}
                             onClick={() => openEndpoint(`${endpoint.method}:${endpoint.path}`)}
                           >
