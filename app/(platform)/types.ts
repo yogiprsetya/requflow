@@ -58,6 +58,7 @@ export type ApiEndpointDetail = {
   id: string;
   method: ApiEndpoint['method'];
   path: string;
+  baseUrl?: string;
   summary?: string;
   description?: string;
   operationId?: string;

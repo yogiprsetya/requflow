@@ -11,6 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/css';
 import { ResponseViewer } from './response-viewer';
 import { ApiEndpointDetail, RequestParameter, SchemaObject } from '../types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
 
 const methodStyles: Record<string, string> = {
   get: 'text-emerald-600',
@@ -34,7 +41,7 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
     ? (Object.keys(endpoint.requestBody.content)[0] ?? 'application/json')
     : 'application/json';
 
-  const [baseUrl, setBaseUrl] = useState('https://api.example.com');
+  const [pathUrl, setPathUrl] = useState(endpoint.path ?? 'https://api.example.com');
   const [activeTab, setActiveTab] = useState('params');
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -68,8 +75,8 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
       .filter((parameter) => values[parameter.name])
       .map((parameter) => `${encodeURIComponent(parameter.name)}=${encodeURIComponent(values[parameter.name])}`)
       .join('&');
-    return `${baseUrl.replace(/\/$/, '')}${path}${search ? `?${search}` : ''}`;
-  }, [baseUrl, endpoint.path, pathParams, queryParams, values]);
+    return `${pathUrl.replace(/\/$/, '')}${path}${search ? `?${search}` : ''}`;
+  }, [pathUrl, endpoint.path, pathParams, queryParams, values]);
 
   const updateValue = (name: string, value: string) => {
     setValues((current) => ({ ...current, [name]: value }));
@@ -87,8 +94,8 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
 
   const removeHeader = (id: number) => setHeaders((current) => current.filter((header) => header.id !== id));
 
-  const copyUrl = async () => {
-    await navigator.clipboard?.writeText(requestUrl);
+  const copyUrl = async (copyUrl: string) => {
+    await navigator.clipboard?.writeText(copyUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   };
@@ -122,27 +129,37 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
       </div>
 
       <div className="bg-muted/20 flex items-center gap-2 border-b px-5 py-3">
-        <Select defaultValue="https">
-          <SelectTrigger className="bg-background w-24">
-            <SelectValue />
-          </SelectTrigger>
-
-          <SelectContent>
-            <SelectItem value="https">HTTPS</SelectItem>
-            <SelectItem value="http">HTTP</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Input
-          value={baseUrl}
-          onChange={(event) => setBaseUrl(event.target.value)}
+          value={endpoint.baseUrl + pathUrl}
+          onChange={(event) => setPathUrl(event.target.value)}
           className="bg-background h-9 flex-1 font-mono text-xs"
           aria-label="Base URL"
         />
 
-        <Button size="icon" variant="ghost" onClick={copyUrl} aria-label="Copy request URL">
-          {copied ? <Check /> : <Copy />}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button size="icon-lg" variant="ghost">
+                {copied ? <Check /> : <Copy />}
+              </Button>
+            }
+          />
+
+          <DropdownMenuContent>
+            <DropdownMenuGroup>
+              <DropdownMenuItem aria-label="Copy request endpoint" onClick={() => copyUrl(endpoint.path)}>
+                Copy path
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                aria-label="Copy request full URL"
+                onClick={() => copyUrl(endpoint.baseUrl + endpoint.path)}
+              >
+                Copy URL
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button
           onClick={() => {

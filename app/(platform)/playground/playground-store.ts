@@ -170,13 +170,18 @@ export function loadEndpointDetails(): ApiEndpointDetail[] {
   try {
     const spec: unknown = JSON.parse(storedSpec);
     if (!isRecord(spec) || !isRecord(spec.paths)) return [];
-    return parseEndpoints(spec.paths);
+    const server = Array.isArray(spec.servers)
+      ? spec.servers.find((candidate) => isRecord(candidate) && typeof candidate.url === 'string')
+      : undefined;
+    const baseUrl = isRecord(server) && typeof server.url === 'string' ? server.url : undefined;
+
+    return parseEndpoints(spec.paths, baseUrl);
   } catch {
     return [];
   }
 }
 
-function parseEndpoints(paths: Record<string, unknown>): ApiEndpointDetail[] {
+function parseEndpoints(paths: Record<string, unknown>, baseUrl?: string): ApiEndpointDetail[] {
   const endpoints: ApiEndpointDetail[] = [];
 
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -210,6 +215,7 @@ function parseEndpoints(paths: Record<string, unknown>): ApiEndpointDetail[] {
         id,
         method,
         path,
+        baseUrl,
         summary: typeof operation.summary === 'string' ? operation.summary : undefined,
         description: typeof operation.description === 'string' ? operation.description : undefined,
         operationId: typeof operation.operationId === 'string' ? operation.operationId : undefined,

@@ -31,10 +31,6 @@ export const Sidedock = () => {
           <TooltipContent side="right">Environment</TooltipContent>
         </Tooltip>
       </div>
-
-      <div className="text-muted-foreground mt-auto text-[0.6rem] font-medium [writing-mode:vertical-rl]">
-        REQFLOW
-      </div>
     </nav>
   );
 };
