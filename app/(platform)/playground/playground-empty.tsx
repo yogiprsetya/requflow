@@ -1,5 +1,6 @@
 import { Braces, FileUp, MousePointerClick } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { ImportSpecDialog } from '../import-spec-dialog';
 import {
   Empty,
   EmptyContent,
@@ -24,10 +25,14 @@ export const PlaygroundEmpty = () => (
     </EmptyHeader>
 
     <EmptyContent className="flex-row justify-center">
-      <Button>
-        <FileUp data-icon="inline-start" />
-        Import spec
-      </Button>
+      <ImportSpecDialog
+        trigger={(onOpen) => (
+          <Button onClick={onOpen}>
+            <FileUp data-icon="inline-start" />
+            Import spec
+          </Button>
+        )}
+      />
 
       <Button variant="outline">
         <MousePointerClick data-icon="inline-start" />

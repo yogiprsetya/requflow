@@ -31,7 +31,7 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
     : 'application/json';
 
   const [pathUrl, setPathUrl] = useState(endpoint.path ?? 'https://api.example.com');
-  const [activeTab, setActiveTab] = useState('params');
+
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       endpoint.parameters.map((parameter) => [
@@ -129,14 +129,14 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button onClick={() => setActiveTab('response')} className="h-9 px-4">
+        <Button className="h-9 px-4">
           <Play data-icon="inline-start" />
           Send
         </Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <Tabs value={activeTab} orientation="vertical" onValueChange={setActiveTab} className="h-full gap-0">
+        <Tabs orientation="vertical" className="h-full gap-0">
           <TabsList variant="line" className="h-11 w-full justify-start rounded-none border-b px-5">
             <TabsTrigger value="params" className="flex-none px-3">
               Params{' '}

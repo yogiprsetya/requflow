@@ -17,6 +17,7 @@ export const Playground = () => {
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
   const newRequest = usePlaygroundStore((state) => state.newRequest);
   const closeRequest = usePlaygroundStore((state) => state.closeRequest);
+  const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
 
@@ -45,6 +46,7 @@ export const Playground = () => {
           endpoints={endpoints}
           tabs={requestTabs}
           onClose={closeRequest}
+          onCloseOthers={closeOtherRequests}
           onSelect={setActiveRequestTab}
         />
 

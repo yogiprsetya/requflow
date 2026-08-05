@@ -78,6 +78,17 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             requestTabs: remainingTabs,
           };
         }),
+      closeOtherRequests: (tabId) =>
+        set((state) => {
+          const tab = state.requestTabs.find((item) => item.id === tabId);
+          if (!tab) return state;
+
+          return {
+            activeEndpointId: tab.endpointId,
+            activeRequestTabId: tab.id,
+            requestTabs: [tab],
+          };
+        }),
       setActiveRequestTab: (tabId) =>
         set((state) => {
           const tab = state.requestTabs.find((item) => item.id === tabId);

@@ -11,18 +11,16 @@ import {
 } from '~/components/ui/dialog';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { useImportSpec } from './use-import-spec';
 
-export function ImportSpecDialog() {
+type ImportSpecDialogProps = {
+  trigger?: (onOpen: () => void) => React.ReactNode;
+};
+
+export function ImportSpecDialog({ trigger }: ImportSpecDialogProps) {
   const {
     error,
     file,
@@ -44,9 +42,13 @@ export function ImportSpecDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button onClick={handleOpen}>
-        <FolderInput /> Spec
-      </Button>
+      {trigger ? (
+        trigger(handleOpen)
+      ) : (
+        <Button onClick={handleOpen}>
+          <FolderInput /> Spec
+        </Button>
+      )}
 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader className="mb-4">
@@ -58,22 +60,13 @@ export function ImportSpecDialog() {
             <div className="flex flex-col">
               <DialogTitle>Import OpenAPI spec</DialogTitle>
 
-              <DialogDescription>
-                Add endpoints from an OpenAPI JSON or YAML document.
-              </DialogDescription>
+              <DialogDescription>Add endpoints from an OpenAPI JSON or YAML document.</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <Tabs
-          value={method}
-          orientation="vertical"
-          onValueChange={handleMethodChange}
-        >
-          <TabsList
-            className="grid h-10 w-full grid-cols-2"
-            aria-label="Import source"
-          >
+        <Tabs value={method} orientation="vertical" onValueChange={handleMethodChange}>
+          <TabsList className="grid h-10 w-full grid-cols-2" aria-label="Import source">
             <TabsTrigger value="file">
               <FileUp data-icon="inline-start" />
               Upload file
@@ -85,16 +78,11 @@ export function ImportSpecDialog() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent
-            value="file"
-            className="bg-muted/20 mt-3 rounded-lg border p-4"
-          >
+          <TabsContent value="file" className="bg-muted/20 mt-3 rounded-lg border p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="openapi-file">OpenAPI file</Label>
-                <span className="text-muted-foreground text-xs">
-                  Select a JSON, YAML, or YML file to upload.
-                </span>
+                <span className="text-muted-foreground text-xs">Select a JSON, YAML, or YML file to upload.</span>
               </div>
 
               <Input
@@ -104,18 +92,11 @@ export function ImportSpecDialog() {
                 onChange={handleFileChange}
               />
 
-              {file && (
-                <p className="text-muted-foreground truncate text-xs">
-                  Selected: {file.name}
-                </p>
-              )}
+              {file && <p className="text-muted-foreground truncate text-xs">Selected: {file.name}</p>}
             </div>
           </TabsContent>
 
-          <TabsContent
-            value="url"
-            className="bg-muted/20 mt-3 rounded-lg border p-4"
-          >
+          <TabsContent value="url" className="bg-muted/20 mt-3 rounded-lg border p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="openapi-url">OpenAPI URL</Label>
@@ -143,10 +124,7 @@ export function ImportSpecDialog() {
             </span>
           </div>
 
-          <Select
-            value={workspace}
-            onValueChange={(value) => setWorkspace(value ?? 'current')}
-          >
+          <Select value={workspace} onValueChange={(value) => setWorkspace(value ?? 'current')}>
             <SelectTrigger id="workspace-target" className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -158,10 +136,7 @@ export function ImportSpecDialog() {
           </Select>
 
           {error && (
-            <p
-              className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-xs"
-              role="alert"
-            >
+            <p className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-xs" role="alert">
               {error}
             </p>
           )}
@@ -172,11 +147,7 @@ export function ImportSpecDialog() {
             Cancel
           </Button>
 
-          <Button
-            size="lg"
-            disabled={!hasSource || isImporting}
-            onClick={handleImport}
-          >
+          <Button size="lg" disabled={!hasSource || isImporting} onClick={handleImport}>
             {isImporting ? 'Validating…' : 'Import'}
           </Button>
         </DialogFooter>

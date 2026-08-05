@@ -18,10 +18,18 @@ type RequestTabsProps = {
   endpoints: ApiEndpointDetail[];
   tabs: RequestTab[];
   onClose: (tabId: string) => void;
+  onCloseOthers: (tabId: string) => void;
   onSelect: (tabId: string) => void;
 };
 
-export const RequestTabs = ({ activeTabId, endpoints, tabs, onClose, onSelect }: RequestTabsProps) => {
+export const RequestTabs = ({
+  activeTabId,
+  endpoints,
+  tabs,
+  onClose,
+  onCloseOthers,
+  onSelect,
+}: RequestTabsProps) => {
   if (!tabs.length) return null;
 
   return (
@@ -64,7 +72,7 @@ export const RequestTabs = ({ activeTabId, endpoints, tabs, onClose, onSelect }:
                 <X /> Close
               </ContextMenuItem>
 
-              <ContextMenuItem>
+              <ContextMenuItem onClick={() => onCloseOthers(tab.id)}>
                 <CopyX /> Close Others
               </ContextMenuItem>
             </ContextMenuContent>

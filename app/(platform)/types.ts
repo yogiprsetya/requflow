@@ -42,6 +42,7 @@ export type PlaygroundState = {
   openEndpoint: (endpointId: string) => void;
   newRequest: (endpointId: string | null) => void;
   closeRequest: (tabId: string) => void;
+  closeOtherRequests: (tabId: string) => void;
   setActiveRequestTab: (tabId: string) => void;
 };
 

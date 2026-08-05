@@ -1,21 +1,19 @@
 import { parse as parseYaml, YAMLParseError } from 'yaml';
 
-export type OpenApiDocument = Record<string, unknown>;
+type OpenApiDocument = Record<string, unknown>;
 
-export interface OpenApiValidationError {
+interface OpenApiValidationError {
   path: string;
   message: string;
 }
 
-export interface OpenApiValidationResult {
+interface OpenApiValidationResult {
   valid: boolean;
   spec?: OpenApiDocument;
   errors: OpenApiValidationError[];
 }
 
-export function validateOpenApiSpec(
-  input: string | unknown
-): OpenApiValidationResult {
+export function validateOpenApiSpec(input: string | unknown): OpenApiValidationResult {
   const errors: OpenApiValidationError[] = [];
   const spec = parseInput(input, errors);
 
@@ -25,15 +23,10 @@ export function validateOpenApiSpec(
 
   validateDocument(spec, errors);
 
-  return errors.length === 0
-    ? { valid: true, spec, errors: [] }
-    : { valid: false, errors };
+  return errors.length === 0 ? { valid: true, spec, errors: [] } : { valid: false, errors };
 }
 
-function parseInput(
-  input: string | unknown,
-  errors: OpenApiValidationError[]
-): OpenApiDocument | undefined {
+function parseInput(input: string | unknown, errors: OpenApiValidationError[]): OpenApiDocument | undefined {
   if (typeof input !== 'string') {
     if (isObject(input)) return input;
 
@@ -54,10 +47,7 @@ function parseInput(
   try {
     parsed = parseYaml(input);
   } catch (error) {
-    const message =
-      error instanceof YAMLParseError
-        ? error.message
-        : 'Invalid JSON/YAML syntax.';
+    const message = error instanceof YAMLParseError ? error.message : 'Invalid JSON/YAML syntax.';
     errors.push({ path: '', message });
     return undefined;
   }
@@ -73,14 +63,8 @@ function parseInput(
   return parsed;
 }
 
-function validateDocument(
-  spec: OpenApiDocument,
-  errors: OpenApiValidationError[]
-): void {
-  if (
-    typeof spec.openapi !== 'string' ||
-    !/^3\.([0-9]+)(?:\.[0-9]+)?$/.test(spec.openapi)
-  ) {
+function validateDocument(spec: OpenApiDocument, errors: OpenApiValidationError[]): void {
+  if (typeof spec.openapi !== 'string' || !/^3\.([0-9]+)(?:\.[0-9]+)?$/.test(spec.openapi)) {
     errors.push({
       path: 'openapi',
       message: 'Required field must be an OpenAPI 3.x version string.',
