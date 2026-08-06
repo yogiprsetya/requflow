@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 
-export function ResponseViewer({ url, method }: { url: string; method: string }) {
+export const ResponseViewer = ({ url, method }: { url: string; method: string }) => {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -43,9 +43,9 @@ export function ResponseViewer({ url, method }: { url: string; method: string })
       </div>
     </section>
   );
-}
+};
 
-function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+const Metric = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => {
   return (
     <div className="bg-muted/10 rounded-lg border p-3">
       <div className="text-muted-foreground flex items-center gap-2 text-xs">
@@ -55,4 +55,4 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
       <p className="mt-2 text-sm font-semibold">{value}</p>
     </div>
   );
-}
+};

@@ -13,7 +13,7 @@ interface OpenApiValidationResult {
   errors: OpenApiValidationError[];
 }
 
-export function validateOpenApiSpec(input: string | unknown): OpenApiValidationResult {
+export const validateOpenApiSpec = (input: string | unknown): OpenApiValidationResult => {
   const errors: OpenApiValidationError[] = [];
   const spec = parseInput(input, errors);
 
@@ -24,9 +24,9 @@ export function validateOpenApiSpec(input: string | unknown): OpenApiValidationR
   validateDocument(spec, errors);
 
   return errors.length === 0 ? { valid: true, spec, errors: [] } : { valid: false, errors };
-}
+};
 
-function parseInput(input: string | unknown, errors: OpenApiValidationError[]): OpenApiDocument | undefined {
+const parseInput = (input: string | unknown, errors: OpenApiValidationError[]): OpenApiDocument | undefined => {
   if (typeof input !== 'string') {
     if (isObject(input)) return input;
 
@@ -61,9 +61,9 @@ function parseInput(input: string | unknown, errors: OpenApiValidationError[]): 
   }
 
   return parsed;
-}
+};
 
-function validateDocument(spec: OpenApiDocument, errors: OpenApiValidationError[]): void {
+const validateDocument = (spec: OpenApiDocument, errors: OpenApiValidationError[]): void => {
   if (typeof spec.openapi !== 'string' || !/^3\.([0-9]+)(?:\.[0-9]+)?$/.test(spec.openapi)) {
     errors.push({
       path: 'openapi',
@@ -95,8 +95,8 @@ function validateDocument(spec: OpenApiDocument, errors: OpenApiValidationError[
       message: 'Required field must be an object.',
     });
   }
-}
+};
 
-function isObject(value: unknown): value is OpenApiDocument {
+const isObject = (value: unknown): value is OpenApiDocument => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+};

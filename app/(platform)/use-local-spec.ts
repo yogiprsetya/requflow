@@ -7,11 +7,11 @@ type ApiGroup = {
   endpoints: ApiEndpoint[];
 };
 
-export function useLocalSpec(): ApiGroup[] {
+export const useLocalSpec = (): ApiGroup[] => {
   const [apiGroups, setApiGroups] = useState<ApiGroup[]>([]);
 
   useEffect(() => {
-    function loadGroups() {
+    const loadGroups = () => {
       const storedSpec = localStorage.getItem(IMPORTED_SPEC_STORAGE_KEY);
       if (!storedSpec) {
         setApiGroups([]);
@@ -28,7 +28,7 @@ export function useLocalSpec(): ApiGroup[] {
       } catch {}
 
       setApiGroups(groups);
-    }
+    };
 
     loadGroups();
     window.addEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
@@ -36,13 +36,13 @@ export function useLocalSpec(): ApiGroup[] {
   }, []);
 
   return apiGroups;
-}
+};
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+};
 
-function groupEndpoints(paths: Record<string, unknown>): ApiGroup[] {
+const groupEndpoints = (paths: Record<string, unknown>): ApiGroup[] => {
   const groups = new Map<string, ApiEndpoint[]>();
 
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -70,4 +70,4 @@ function groupEndpoints(paths: Record<string, unknown>): ApiGroup[] {
   return [...groups.entries()]
     .sort(([first], [second]) => first.localeCompare(second))
     .map(([tag, endpoints]) => ({ tag, endpoints }));
-}
+};

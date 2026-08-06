@@ -1,5 +1,7 @@
 import Playground from './playground';
 
-export default function PlatformPage() {
+const PlatformPage = () => {
   return <Playground />;
-}
+};
+
+export default PlatformPage;

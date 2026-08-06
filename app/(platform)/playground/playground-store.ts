@@ -11,9 +11,9 @@ import {
   SchemaObject,
 } from '../types';
 
-function createRequestTab(endpointId: string): PlaygroundTab {
+const createRequestTab = (endpointId: string): PlaygroundTab => {
   return { id: `${endpointId}:${Date.now()}:${Math.random()}`, endpointId };
-}
+};
 
 export const usePlaygroundStore = create<PlaygroundState>()(
   persist(
@@ -99,11 +99,11 @@ export const usePlaygroundStore = create<PlaygroundState>()(
   )
 );
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+};
 
-function toSchemaObject(value: unknown): SchemaObject | undefined {
+const toSchemaObject = (value: unknown): SchemaObject | undefined => {
   if (!isRecord(value)) return undefined;
 
   const schema: SchemaObject = {};
@@ -133,9 +133,9 @@ function toSchemaObject(value: unknown): SchemaObject | undefined {
   }
 
   return schema;
-}
+};
 
-function toRequestParameter(value: unknown): RequestParameter | undefined {
+const toRequestParameter = (value: unknown): RequestParameter | undefined => {
   if (!isRecord(value)) return undefined;
   if (typeof value.name !== 'string' || !value.name) return undefined;
   if (typeof value.in !== 'string' || !value.in) return undefined;
@@ -148,9 +148,9 @@ function toRequestParameter(value: unknown): RequestParameter | undefined {
     schema: toSchemaObject(value.schema),
     example: 'example' in value ? value.example : undefined,
   };
-}
+};
 
-function toRequestBody(value: unknown): RequestBody | undefined {
+const toRequestBody = (value: unknown): RequestBody | undefined => {
   if (!isRecord(value)) return undefined;
 
   const body: RequestBody = {
@@ -170,9 +170,9 @@ function toRequestBody(value: unknown): RequestBody | undefined {
   }
 
   return body;
-}
+};
 
-export function loadEndpointDetails(): ApiEndpointDetail[] {
+export const loadEndpointDetails = (): ApiEndpointDetail[] => {
   if (typeof window === 'undefined') return [];
 
   const storedSpec = localStorage.getItem(IMPORTED_SPEC_STORAGE_KEY);
@@ -190,9 +190,9 @@ export function loadEndpointDetails(): ApiEndpointDetail[] {
   } catch {
     return [];
   }
-}
+};
 
-function parseEndpoints(paths: Record<string, unknown>, baseUrl?: string): ApiEndpointDetail[] {
+const parseEndpoints = (paths: Record<string, unknown>, baseUrl?: string): ApiEndpointDetail[] => {
   const endpoints: ApiEndpointDetail[] = [];
 
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -238,18 +238,18 @@ function parseEndpoints(paths: Record<string, unknown>, baseUrl?: string): ApiEn
   }
 
   return endpoints;
-}
+};
 
-export function useEndpointById(id: string | null): ApiEndpointDetail | undefined {
+export const useEndpointById = (id: string | null): ApiEndpointDetail | undefined => {
   if (typeof window === 'undefined') return undefined;
 
   const endpoints = loadEndpointDetails();
   return endpoints.find((endpoint) => endpoint.id === id);
-}
+};
 
-export function subscribeToSpecChanges(callback: () => void): () => void {
+export const subscribeToSpecChanges = (callback: () => void): (() => void) => {
   if (typeof window === 'undefined') return () => {};
 
   window.addEventListener(IMPORTED_SPEC_UPDATED_EVENT, callback);
   return () => window.removeEventListener(IMPORTED_SPEC_UPDATED_EVENT, callback);
-}
+};

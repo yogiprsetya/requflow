@@ -20,7 +20,7 @@ type ImportSpecDialogProps = {
   trigger?: (onOpen: () => void) => React.ReactNode;
 };
 
-export function ImportSpecDialog({ trigger }: ImportSpecDialogProps) {
+export const ImportSpecDialog = ({ trigger }: ImportSpecDialogProps) => {
   const {
     error,
     file,
@@ -154,4 +154,4 @@ export function ImportSpecDialog({ trigger }: ImportSpecDialogProps) {
       </DialogContent>
     </Dialog>
   );
-}
+};

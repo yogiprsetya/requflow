@@ -1,6 +1,6 @@
 import { type ApiEndpoint } from './types';
 
-export function methodBadgeClass(method: ApiEndpoint['method']): string {
+export const methodBadgeClass = (method: ApiEndpoint['method']): string => {
   switch (method) {
     case 'get':
       return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-transparent';
@@ -15,9 +15,9 @@ export function methodBadgeClass(method: ApiEndpoint['method']): string {
     default:
       return 'bg-card text-muted-foreground border-border';
   }
-}
+};
 
-export function methodTextClass(method: ApiEndpoint['method']): string {
+export const methodTextClass = (method: ApiEndpoint['method']): string => {
   switch (method) {
     case 'get':
       return 'text-green-800 dark:text-green-300';
@@ -32,4 +32,4 @@ export function methodTextClass(method: ApiEndpoint['method']): string {
     default:
       return 'text-muted-foreground';
   }
-}
+};

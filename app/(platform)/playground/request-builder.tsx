@@ -21,7 +21,7 @@ import { methodTextClass } from '../utils';
 
 type KeyValue = { id: number; key: string; value: string; enabled: boolean };
 
-export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
+export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) => {
   const queryParams = endpoint.parameters.filter((parameter) => parameter.in === 'query');
   const pathParams = endpoint.parameters.filter((parameter) => parameter.in === 'path');
   const headerParams = endpoint.parameters.filter((parameter) => parameter.in === 'header');
@@ -283,9 +283,9 @@ export function RequestBuilder({ endpoint }: { endpoint: ApiEndpointDetail }) {
       </div>
     </section>
   );
-}
+};
 
-function ParameterSection({
+const ParameterSection = ({
   title,
   parameters,
   values,
@@ -295,7 +295,7 @@ function ParameterSection({
   parameters: RequestParameter[];
   values: Record<string, string>;
   onChange: (name: string, value: string) => void;
-}) {
+}) => {
   if (!parameters.length) return null;
   return (
     <div className="space-y-3">
@@ -352,18 +352,16 @@ function ParameterSection({
       </div>
     </div>
   );
-}
+};
 
-function EmptySection({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <div className="text-muted-foreground rounded-lg border border-dashed p-8 text-center text-sm">
-      {icon}
-      <p className="mt-2">{text}</p>
-    </div>
-  );
-}
+const EmptySection = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
+  <div className="text-muted-foreground flex flex-col items-center rounded-lg border border-dashed p-8 text-center text-sm">
+    {icon}
+    <p className="mt-2">{text}</p>
+  </div>
+);
 
-function placeholderFor(schema?: SchemaObject): string {
+const placeholderFor = (schema?: SchemaObject): string => {
   if (!schema) return 'Enter value';
   if (schema.example !== undefined) return String(schema.example);
   if (schema.default !== undefined) return String(schema.default);
@@ -372,9 +370,9 @@ function placeholderFor(schema?: SchemaObject): string {
     : schema.type === 'boolean'
       ? 'true'
       : 'Enter value';
-}
+};
 
-function createBodyValue(schema?: SchemaObject): string {
+const createBodyValue = (schema?: SchemaObject): string => {
   if (!schema) return '{}';
 
   const value = Object.fromEntries(
@@ -384,9 +382,9 @@ function createBodyValue(schema?: SchemaObject): string {
   );
 
   return JSON.stringify(schema.type === 'array' ? [sampleValue(schema.items)] : value, null, 2);
-}
+};
 
-function sampleValue(schema?: SchemaObject): unknown {
+const sampleValue = (schema?: SchemaObject): unknown => {
   if (!schema) return '';
   if (schema.enum?.length) return schema.enum[0];
   if (schema.type === 'integer' || schema.type === 'number') return 0;
@@ -398,4 +396,4 @@ function sampleValue(schema?: SchemaObject): unknown {
     );
 
   return '';
-}
+};
