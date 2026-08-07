@@ -9,7 +9,7 @@ import { Label } from '~/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/css';
-import { ApiEndpointDetail, RequestParameter, SchemaObject } from '../types';
+import { ApiEndpointDetail, PlaygroundRequest, RequestParameter, SchemaObject } from '../types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,13 @@ import { methodTextClass } from '../utils';
 
 type KeyValue = { id: number; key: string; value: string; enabled: boolean };
 
-export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) => {
+export const RequestBuilder = ({
+  endpoint,
+  onSend,
+}: {
+  endpoint: ApiEndpointDetail;
+  onSend: (request: PlaygroundRequest) => void;
+}) => {
   const queryParams = endpoint.parameters.filter((parameter) => parameter.in === 'query');
   const pathParams = endpoint.parameters.filter((parameter) => parameter.in === 'path');
   const headerParams = endpoint.parameters.filter((parameter) => parameter.in === 'header');
@@ -30,7 +36,7 @@ export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) =>
     ? (Object.keys(endpoint.requestBody.content)[0] ?? 'application/json')
     : 'application/json';
 
-  const [pathUrl, setPathUrl] = useState(endpoint.path ?? 'https://api.example.com');
+  const [pathUrl, setPathUrl] = useState(`${endpoint.baseUrl ?? ''}${endpoint.path}`);
 
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -71,8 +77,34 @@ export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) =>
     window.setTimeout(() => setCopied(false), 1200);
   };
 
+  const sendRequest = () => {
+    const url = new URL(pathUrl, window.location.origin);
+
+    endpoint.parameters.forEach((parameter) => {
+      const value = values[parameter.name];
+      if (!value) return;
+
+      if (parameter.in === 'path') {
+        url.pathname = url.pathname.replace(`{${parameter.name}}`, encodeURIComponent(value));
+      } else if (parameter.in === 'query') {
+        url.searchParams.set(parameter.name, value);
+      }
+    });
+
+    const requestHeaders = Object.fromEntries(
+      headers.filter((header) => header.enabled && header.key.trim()).map((header) => [header.key, header.value])
+    );
+
+    onSend({
+      url: url.toString(),
+      method: endpoint.method,
+      headers: requestHeaders,
+      body: endpoint.requestBody ? body : undefined,
+    });
+  };
+
   return (
-    <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden border shadow-sm">
+    <section className="bg-card flex min-h-0 flex-1 flex-col overflow-hidden border border-b-0 border-l-0 shadow-sm">
       <div className="border-b px-5 py-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge
@@ -98,7 +130,7 @@ export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) =>
 
       <div className="bg-muted/20 flex items-center gap-2 border-b px-5 py-3">
         <Input
-          value={endpoint.baseUrl + pathUrl}
+          value={pathUrl}
           onChange={(event) => setPathUrl(event.target.value)}
           className="bg-background h-9 flex-1 font-mono text-xs"
           aria-label="Base URL"
@@ -129,7 +161,7 @@ export const RequestBuilder = ({ endpoint }: { endpoint: ApiEndpointDetail }) =>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button className="h-9 px-4">
+        <Button className="h-9 px-4" onClick={sendRequest}>
           <Play data-icon="inline-start" />
           Send
         </Button>

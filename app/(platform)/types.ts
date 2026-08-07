@@ -7,6 +7,23 @@ export type PlaygroundTab = {
   endpointId: string;
 };
 
+export type PlaygroundRequest = {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body?: string;
+};
+
+export type PlaygroundResponse = {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  body: unknown;
+  durationMs: number;
+  sizeBytes: number;
+  error?: string;
+};
+
 export type ApiEndpoint = {
   method: (typeof httpMethods)[number];
   path: string;

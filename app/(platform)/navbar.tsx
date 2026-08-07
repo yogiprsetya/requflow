@@ -19,7 +19,7 @@ export const PlatformNavbar = () => {
   const { setTheme, theme } = useTheme();
 
   return (
-    <header className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b pr-4 pl-1 backdrop-blur">
+    <header className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-30 flex h-14 min-h-14 w-full items-center justify-between border-b pr-4 pl-1 backdrop-blur">
       <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger aria-label="Toggle navigation sidebar" />
 

@@ -6,7 +6,7 @@ import { Button } from '~/components/ui/button';
 import { RequestBuilder } from './request-builder';
 import { ResponseViewer } from './response-viewer';
 import { loadEndpointDetails, subscribeToSpecChanges, usePlaygroundStore } from './playground-store';
-import { ApiEndpointDetail } from '../types';
+import { ApiEndpointDetail, PlaygroundRequest, PlaygroundResponse } from '../types';
 import { PlaygroundEmpty } from './playground-empty';
 import { RequestTabs } from './request-tabs';
 
@@ -20,6 +20,8 @@ export const Playground = () => {
   const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
+  const [response, setResponse] = useState<PlaygroundResponse | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     const refresh = () => setEndpoints(loadEndpointDetails());
@@ -35,6 +37,51 @@ export const Playground = () => {
 
   const endpointId = activeEndpointId ?? endpoints[0]?.id;
   const endpoint = endpoints.find((item) => item.id === endpointId);
+
+  const sendRequest = async (request: PlaygroundRequest) => {
+    setIsSending(true);
+    const startedAt = performance.now();
+
+    try {
+      const result = await fetch(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      });
+      const rawBody = await result.text();
+      const contentType = result.headers.get('content-type') ?? '';
+      let body: unknown = rawBody;
+
+      if (contentType.includes('json') && rawBody) {
+        try {
+          body = JSON.parse(rawBody);
+        } catch {
+          body = rawBody;
+        }
+      }
+
+      setResponse({
+        status: result.status,
+        statusText: result.statusText,
+        headers: Object.fromEntries(result.headers.entries()),
+        body,
+        durationMs: Math.round(performance.now() - startedAt),
+        sizeBytes: new TextEncoder().encode(rawBody).length,
+      });
+    } catch (error) {
+      setResponse({
+        status: 0,
+        statusText: 'Request failed',
+        headers: {},
+        body: null,
+        durationMs: Math.round(performance.now() - startedAt),
+        sizeBytes: 0,
+        error: error instanceof Error ? error.message : 'Unable to send request.',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   if (!endpoint) return <PlaygroundEmpty />;
 
@@ -55,9 +102,9 @@ export const Playground = () => {
         </Button>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 xl:flex-row">
-        <RequestBuilder key={activeRequestTabId ?? endpoint.id} endpoint={endpoint} />
-        <ResponseViewer url={endpoint.path} method={endpoint.method} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:mr-1 xl:flex-row">
+        <RequestBuilder key={activeRequestTabId ?? endpoint.id} endpoint={endpoint} onSend={sendRequest} />
+        <ResponseViewer url={endpoint.path} method={endpoint.method} response={response} isLoading={isSending} />
       </div>
     </div>
   );
