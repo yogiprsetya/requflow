@@ -104,7 +104,7 @@ export const Playground = () => {
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:mr-1 xl:flex-row">
         <RequestBuilder key={activeRequestTabId ?? endpoint.id} endpoint={endpoint} onSend={sendRequest} />
-        <ResponseViewer url={endpoint.path} method={endpoint.method} response={response} isLoading={isSending} />
+        <ResponseViewer response={response} isLoading={isSending} />
       </div>
     </div>
   );
