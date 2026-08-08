@@ -57,5 +57,6 @@ These guidelines are working if: fewer unnecessary changes in diffs, fewer rewri
 
 - Use arrow functions for components, hooks, utilities, and callbacks; avoid function declarations.
 - Add a blank line between markup blocks for readability.
+- Decouple file with rules: ui -> logic -> api
 
 Spec Reference: @SPEC.md
