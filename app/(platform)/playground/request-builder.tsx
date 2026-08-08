@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Check, ChevronDown, Copy, KeyRound, Play, Plus, Trash2 } from 'lucide-react';
+import { Check, Copy, KeyRound, Link2, Play, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { methodTextClass } from '../utils';
+import { jsonValidationError, methodTextClass } from '../utils';
 
 type KeyValue = { id: number; key: string; value: string; enabled: boolean };
 
@@ -55,6 +55,7 @@ export const RequestBuilder = ({
     }))
   );
   const [body, setBody] = useState(() => createBodyValue(endpoint.requestBody?.content?.[bodyMediaType]?.schema));
+  const bodyError = endpoint.requestBody ? jsonValidationError(body) : undefined;
   const [copied, setCopied] = useState(false);
 
   const updateValue = (name: string, value: string) => {
@@ -78,6 +79,8 @@ export const RequestBuilder = ({
   };
 
   const sendRequest = () => {
+    if (bodyError) return;
+
     const url = new URL(pathUrl, window.location.origin);
 
     endpoint.parameters.forEach((parameter) => {
@@ -213,7 +216,7 @@ export const RequestBuilder = ({
             />
 
             {pathParams.length + queryParams.length + cookieParams.length === 0 && (
-              <EmptySection icon={<ChevronDown />} text="No parameters defined for this endpoint." />
+              <EmptySection icon={<Link2 />} text="No parameters defined for this endpoint." />
             )}
           </TabsContent>
 
@@ -292,7 +295,10 @@ export const RequestBuilder = ({
             </div>
 
             {endpoint.requestBody ? (
-              <JsonEditor value={body} onChange={setBody} />
+              <div className="space-y-2">
+                <JsonEditor value={body} onChange={setBody} hasError={Boolean(bodyError)} />
+                {bodyError && <p className="text-destructive text-xs">{bodyError}</p>}
+              </div>
             ) : (
               <EmptySection icon={<KeyRound />} text="This endpoint does not define a request body." />
             )}
@@ -313,7 +319,15 @@ export const RequestBuilder = ({
   );
 };
 
-const JsonEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
+const JsonEditor = ({
+  value,
+  onChange,
+  hasError,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  hasError: boolean;
+}) => {
   const highlightRef = useRef<HTMLPreElement>(null);
 
   const syncScroll = (event: React.UIEvent<HTMLTextAreaElement>) => {
@@ -323,7 +337,11 @@ const JsonEditor = ({ value, onChange }: { value: string; onChange: (value: stri
   };
 
   return (
-    <div className="border-input bg-muted/20 focus-within:border-ring focus-within:ring-ring/50 relative min-h-64 overflow-hidden rounded-lg border focus-within:ring-3">
+    <div
+      className={`bg-muted/20 focus-within:ring-ring/50 relative min-h-64 overflow-hidden rounded-lg border focus-within:ring-3 ${
+        hasError ? 'border-destructive' : 'border-input focus-within:border-ring'
+      }`}
+    >
       <pre
         ref={highlightRef}
         aria-hidden="true"
@@ -339,6 +357,7 @@ const JsonEditor = ({ value, onChange }: { value: string; onChange: (value: stri
         className="caret-foreground selection:bg-primary/20 relative block min-h-64 w-full resize-y overflow-auto bg-transparent p-4 font-mono text-xs leading-normal text-transparent outline-none"
         spellCheck={false}
         aria-label="Request body"
+        aria-invalid={hasError}
       />
     </div>
   );

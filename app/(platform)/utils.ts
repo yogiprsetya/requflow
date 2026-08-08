@@ -33,3 +33,12 @@ export const methodTextClass = (method: ApiEndpoint['method']): string => {
       return 'text-muted-foreground';
   }
 };
+
+export const jsonValidationError = (value: string): string | undefined => {
+  try {
+    JSON.parse(value);
+    return undefined;
+  } catch {
+    return 'Request body must be valid JSON.';
+  }
+};
