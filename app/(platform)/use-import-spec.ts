@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { validateOpenApiSpec } from '~/lib/openapi-validator';
 import { IMPORTED_SPEC_STORAGE_KEY, IMPORTED_SPEC_UPDATED_EVENT } from './constant';
-
-const acceptedExtensions = /\.(json|ya?ml)$/i;
+import {
+  importSpecFromFile,
+  importSpecFromUrl,
+  isSupportedSpecFile,
+  validateImportedSpec,
+} from './openapi-import';
 
 export type ImportMethod = 'file' | 'url';
 
@@ -43,7 +46,7 @@ export const useImportSpec = () => {
     const nextFile = event.target.files?.[0] ?? null;
     setError('');
 
-    if (nextFile && !acceptedExtensions.test(nextFile.name)) {
+    if (nextFile && !isSupportedSpecFile(nextFile)) {
       setFile(null);
       setError('Choose an OpenAPI file with a .json, .yaml, or .yml extension.');
       return;
@@ -70,35 +73,15 @@ export const useImportSpec = () => {
 
     try {
       let source: string;
-
       if (method === 'file') {
-        source = await file!.text();
+        if (!file) throw new Error('Select an OpenAPI file.');
+        source = await importSpecFromFile(file);
       } else {
-        let parsedUrl: URL;
-
-        try {
-          parsedUrl = new URL(url);
-          if (!/^https?:$/.test(parsedUrl.protocol)) throw new Error();
-        } catch {
-          throw new Error('Enter a valid HTTP or HTTPS URL.');
-        }
-
-        const response = await fetch(parsedUrl);
-        if (!response.ok) {
-          throw new Error(`Unable to fetch the spec (HTTP ${response.status}).`);
-        }
-
-        source = await response.text();
+        source = await importSpecFromUrl(url);
       }
+      const serializedSpec = validateImportedSpec(source);
 
-      const result = validateOpenApiSpec(source);
-      if (!result.valid || !result.spec) {
-        throw new Error(
-          result.errors.map(({ path, message }) => (path ? `${path}: ${message}` : message)).join(' ')
-        );
-      }
-
-      localStorage.setItem(IMPORTED_SPEC_STORAGE_KEY, JSON.stringify(result.spec));
+      localStorage.setItem(IMPORTED_SPEC_STORAGE_KEY, serializedSpec);
       window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
       reset();
