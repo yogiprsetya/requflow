@@ -21,7 +21,7 @@ const PlatformPage = () => {
   const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
-  const { isSending, response, sendRequest } = useRequestExecution();
+  const { getResponse, isSending, sendRequest } = useRequestExecution();
 
   useEffect(() => {
     const refresh = () => setEndpoints(loadEndpointDetails());
@@ -37,6 +37,7 @@ const PlatformPage = () => {
 
   const endpointId = activeEndpointId ?? endpoints[0]?.id;
   const endpoint = endpoints.find((item) => item.id === endpointId);
+  const response = getResponse(activeRequestTabId);
 
   if (!endpoint) return <PlaygroundEmpty />;
 
@@ -58,8 +59,12 @@ const PlatformPage = () => {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden sm:mr-1 xl:flex-row">
-        <RequestBuilder key={activeRequestTabId ?? endpoint.id} endpoint={endpoint} onSend={sendRequest} />
-        <ResponseViewer response={response} isLoading={isSending} />
+        <RequestBuilder
+          key={activeRequestTabId ?? endpoint.id}
+          endpoint={endpoint}
+          onSend={(request) => activeRequestTabId && sendRequest(activeRequestTabId, request)}
+        />
+        <ResponseViewer response={response} isLoading={isSending(activeRequestTabId)} />
       </div>
     </div>
   );
