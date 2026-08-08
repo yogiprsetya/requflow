@@ -168,7 +168,7 @@ export const RequestBuilder = ({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <Tabs orientation="vertical" className="h-full gap-0">
+        <Tabs orientation="vertical" defaultValue="params" className="h-full gap-0">
           <TabsList variant="line" className="h-11 w-full justify-start rounded-none border-b px-5">
             <TabsTrigger value="params" className="flex-none px-3">
               Params{' '}

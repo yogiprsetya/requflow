@@ -135,7 +135,16 @@ const toSchemaObject = (value: unknown): SchemaObject | undefined => {
   return schema;
 };
 
-const toRequestParameter = (value: unknown): RequestParameter | undefined => {
+const toRequestParameter = (
+  value: unknown,
+  parameterComponents: Record<string, unknown> = {}
+): RequestParameter | undefined => {
+  if (isRecord(value) && typeof value.$ref === 'string') {
+    const parameterRef = value.$ref.match(/^#\/components\/parameters\/([^/]+)$/);
+    const referencedParameter = parameterRef ? parameterComponents[parameterRef[1]] : undefined;
+    if (referencedParameter) value = referencedParameter;
+  }
+
   if (!isRecord(value)) return undefined;
   if (typeof value.name !== 'string' || !value.name) return undefined;
   if (typeof value.in !== 'string' || !value.in) return undefined;
@@ -186,13 +195,20 @@ export const loadEndpointDetails = (): ApiEndpointDetail[] => {
       : undefined;
     const baseUrl = isRecord(server) && typeof server.url === 'string' ? server.url : undefined;
 
-    return parseEndpoints(spec.paths, baseUrl);
+    const components = isRecord(spec.components) ? spec.components : undefined;
+    const parameterComponents = components && isRecord(components.parameters) ? components.parameters : undefined;
+
+    return parseEndpoints(spec.paths, baseUrl, parameterComponents);
   } catch {
     return [];
   }
 };
 
-const parseEndpoints = (paths: Record<string, unknown>, baseUrl?: string): ApiEndpointDetail[] => {
+const parseEndpoints = (
+  paths: Record<string, unknown>,
+  baseUrl?: string,
+  parameterComponents?: Record<string, unknown>
+): ApiEndpointDetail[] => {
   const endpoints: ApiEndpointDetail[] = [];
 
   for (const [path, pathItem] of Object.entries(paths)) {
@@ -207,15 +223,17 @@ const parseEndpoints = (paths: Record<string, unknown>, baseUrl?: string): ApiEn
         : [];
 
       const parameters: RequestParameter[] = [];
+
       if (Array.isArray(pathItem.parameters)) {
         for (const param of pathItem.parameters) {
-          const parsed = toRequestParameter(param);
+          const parsed = toRequestParameter(param, parameterComponents);
           if (parsed) parameters.push(parsed);
         }
       }
+
       if (Array.isArray(operation.parameters)) {
         for (const param of operation.parameters) {
-          const parsed = toRequestParameter(param);
+          const parsed = toRequestParameter(param, parameterComponents);
           if (parsed) parameters.push(parsed);
         }
       }
