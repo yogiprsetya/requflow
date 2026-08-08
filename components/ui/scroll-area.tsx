@@ -5,7 +5,14 @@ import { ScrollArea as ScrollAreaPrimitive } from '@base-ui/react/scroll-area';
 
 import { cn } from '~/lib/css';
 
-const ScrollArea = ({ className, children, ...props }: ScrollAreaPrimitive.Root.Props) => {
+const ScrollArea = ({
+  className,
+  children,
+  orientation = 'vertical',
+  ...props
+}: ScrollAreaPrimitive.Root.Props & {
+  orientation?: 'horizontal' | 'vertical';
+}) => {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
@@ -16,9 +23,9 @@ const ScrollArea = ({ className, children, ...props }: ScrollAreaPrimitive.Root.
         data-slot="scroll-area-viewport"
         className="focus-visible:ring-ring/50 size-full min-h-0 min-w-0 overflow-auto rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1"
       >
-        {children}
+        <ScrollAreaPrimitive.Content data-slot="scroll-area-content">{children}</ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
+      <ScrollBar orientation={orientation} />
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>
   );
@@ -31,7 +38,9 @@ const ScrollBar = ({ className, orientation = 'vertical', ...props }: ScrollArea
       data-orientation={orientation}
       orientation={orientation}
       className={cn(
-        'flex touch-none p-px transition-colors select-none data-horizontal:h-2.5 data-horizontal:flex-col data-horizontal:border-t data-horizontal:border-t-transparent data-vertical:h-full data-vertical:w-2.5 data-vertical:border-l data-vertical:border-l-transparent',
+        'flex touch-none p-px transition-colors select-none',
+        'data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:border-t data-[orientation=horizontal]:border-t-transparent data-[orientation=horizontal]:hover:h-2',
+        'data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1 data-[orientation=vertical]:border-l data-[orientation=vertical]:border-l-transparent data-[orientation=vertical]:hover:w-2',
         className
       )}
       {...props}
