@@ -1,5 +1,16 @@
+import { useState } from 'react';
 import { Check, Plus, SquarePen, User } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Label } from '~/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +22,9 @@ import {
 import { useWorkspaceStore } from './workspace-store';
 
 export const WorkspaceSwitcher = () => {
+  const [dialogMode, setDialogMode] = useState<'create' | 'rename' | null>(null);
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [nameError, setNameError] = useState('');
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
@@ -19,13 +33,34 @@ export const WorkspaceSwitcher = () => {
   const activeWorkspace = workspaces.find((workspace) => workspace.id === activeWorkspaceId) ?? workspaces[0];
 
   const handleCreate = () => {
-    const name = window.prompt('Workspace name');
-    if (name !== null) createWorkspace(name);
+    setWorkspaceName('');
+    setNameError('');
+    setDialogMode('create');
   };
 
   const handleRename = () => {
-    const name = window.prompt('Workspace name', activeWorkspace.name);
-    if (name !== null) renameWorkspace(activeWorkspace.id, name);
+    setWorkspaceName(activeWorkspace.name);
+    setNameError('');
+    setDialogMode('rename');
+  };
+
+  const handleDialogChange = (open: boolean) => {
+    if (!open) {
+      setDialogMode(null);
+      setNameError('');
+    }
+  };
+
+  const handleSubmit = () => {
+    const name = workspaceName.trim();
+    if (!name) {
+      setNameError('Enter a workspace name.');
+      return;
+    }
+
+    const saved =
+      dialogMode === 'create' ? createWorkspace(name) !== null : renameWorkspace(activeWorkspace.id, name);
+    if (saved) setDialogMode(null);
   };
 
   return (
@@ -60,6 +95,44 @@ export const WorkspaceSwitcher = () => {
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
+
+      <Dialog open={dialogMode !== null} onOpenChange={handleDialogChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogMode === 'rename' ? 'Rename workspace' : 'Add workspace'}</DialogTitle>
+            <DialogDescription>
+              {dialogMode === 'rename'
+                ? 'Choose a new name for this workspace.'
+                : 'Create a workspace for a separate set of endpoints.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="workspace-name">Workspace name</Label>
+            <Input
+              id="workspace-name"
+              autoFocus
+              value={workspaceName}
+              onChange={(event) => {
+                setWorkspaceName(event.target.value);
+                setNameError('');
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') handleSubmit();
+              }}
+              aria-invalid={Boolean(nameError)}
+            />
+            {nameError && <p className="text-destructive text-xs">{nameError}</p>}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => handleDialogChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSubmit}>{dialogMode === 'rename' ? 'Rename' : 'Create'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DropdownMenu>
   );
 };
