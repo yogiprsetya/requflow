@@ -131,7 +131,6 @@ export const ImportSpecDialog = ({ trigger }: ImportSpecDialogProps) => {
 
             <SelectContent>
               <SelectItem value="current">Current workspace</SelectItem>
-              <SelectItem value="new">New workspace</SelectItem>
             </SelectContent>
           </Select>
 

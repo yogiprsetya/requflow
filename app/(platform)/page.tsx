@@ -10,6 +10,7 @@ import { ApiEndpointDetail } from './types';
 import { PlaygroundEmpty } from './playground/playground-empty';
 import { RequestTabs } from './playground/request-tabs';
 import { useRequestExecution } from './use-request-execution';
+import { useWorkspaceStore } from './workspace-store';
 
 const PlatformPage = () => {
   const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
@@ -20,6 +21,8 @@ const PlatformPage = () => {
   const closeRequest = usePlaygroundStore((state) => state.closeRequest);
   const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
+  const setActiveEndpointId = usePlaygroundStore((state) => state.setActiveEndpointId);
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
   const { getResponse, isSending, sendRequest } = useRequestExecution();
 
@@ -27,7 +30,11 @@ const PlatformPage = () => {
     const refresh = () => setEndpoints(loadEndpointDetails());
     refresh();
     return subscribeToSpecChanges(refresh);
-  }, []);
+  }, [activeWorkspaceId]);
+
+  useEffect(() => {
+    setActiveEndpointId(null);
+  }, [activeWorkspaceId, setActiveEndpointId]);
 
   useEffect(() => {
     if (!requestTabs.length && endpoints[0]) {

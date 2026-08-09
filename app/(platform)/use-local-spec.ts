@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { IMPORTED_SPEC_STORAGE_KEY, IMPORTED_SPEC_UPDATED_EVENT } from './constant';
+import { IMPORTED_SPEC_UPDATED_EVENT } from './constant';
 import { groupEndpoints, type ApiGroup, parseStoredSpec } from './openapi';
+import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
 
 export const useLocalSpec = (): ApiGroup[] => {
   const [apiGroups, setApiGroups] = useState<ApiGroup[]>([]);
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const workspaces = useWorkspaceStore((state) => state.workspaces);
 
   useEffect(() => {
     const loadGroups = () => {
-      const storedSpec = localStorage.getItem(IMPORTED_SPEC_STORAGE_KEY);
+      const workspace = getActiveWorkspace({ activeWorkspaceId, workspaces });
+      const storedSpec = workspace?.spec ?? null;
       if (!storedSpec) {
         setApiGroups([]);
         return;
@@ -19,7 +23,7 @@ export const useLocalSpec = (): ApiGroup[] => {
     loadGroups();
     window.addEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
     return () => window.removeEventListener(IMPORTED_SPEC_UPDATED_EVENT, loadGroups);
-  }, []);
+  }, [activeWorkspaceId, workspaces]);
 
   return apiGroups;
 };

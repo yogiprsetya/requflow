@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { IMPORTED_SPEC_STORAGE_KEY, IMPORTED_SPEC_UPDATED_EVENT } from './constant';
+import { IMPORTED_SPEC_UPDATED_EVENT } from './constant';
 import {
   importSpecFromFile,
   importSpecFromUrl,
   isSupportedSpecFile,
   validateImportedSpec,
 } from './openapi-import';
+import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';
 
@@ -17,6 +18,8 @@ export const useImportSpec = () => {
   const [workspace, setWorkspace] = useState('current');
   const [error, setError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const setWorkspaceSpec = useWorkspaceStore((state) => state.setWorkspaceSpec);
 
   const hasSource = method === 'file' ? file !== null : url.trim().length > 0;
 
@@ -81,7 +84,9 @@ export const useImportSpec = () => {
       }
       const serializedSpec = validateImportedSpec(source);
 
-      localStorage.setItem(IMPORTED_SPEC_STORAGE_KEY, serializedSpec);
+      const targetWorkspaceId =
+        workspace === 'current' ? activeWorkspaceId : getActiveWorkspace(useWorkspaceStore.getState()).id;
+      setWorkspaceSpec(targetWorkspaceId, serializedSpec);
       window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
       reset();

@@ -28,6 +28,14 @@ The application shell is divided into four persistent regions:
 | **Sidebar** | Fixed, collapsible              | Toggleable via Dock | Endpoint Explorer — browse/search endpoints from both Spec Mode and Manual Mode       |
 | **Main**    | Fluid, fills remaining space    | Always visible      | Playground — request builder, response viewer, active endpoint detail                 |
 
+### Workspace Model
+
+- The playground supports multiple workspaces.
+- Each workspace is an independent top-level container for its own imported and manually added endpoints.
+- Exactly one workspace is active at a time; the active workspace determines the endpoints shown in the Sidebar and the endpoint context loaded in Main.
+- Creating or selecting a workspace must not modify endpoints in any other workspace.
+- The active workspace is restored when the user returns to the application. Workspace data and names are persisted according to the application's storage strategy.
+
 ---
 
 ## 2. Navbar
@@ -88,7 +96,7 @@ Triggered exclusively by the **Import Spec** button in Navbar.
 - Two input methods, presented as tabs or a toggle within the dialog:
   1. **Upload file** — file picker, accepts `.json` / `.yaml` / `.yml`.
   2. **Import from URL** — text input for a spec URL, with a "Fetch" action.
-- **Workspace target selector** — dropdown to choose which active workspace the imported spec's endpoints should be added to (defaults to the currently active workspace).
+- **Workspace target selector** — dropdown to choose which workspace the imported spec's endpoints should be added to (defaults to the currently active workspace).
 - Primary action: **Import** button (disabled until a valid file/URL is provided).
 - Secondary action: **Cancel** (closes dialog, discards input).
 
@@ -119,7 +127,13 @@ The leftmost, narrow vertical rail. Always visible regardless of sidebar state �
 2. **Create New Workspace button**
    - Opens a modal/panel to create a new workspace.
    - A workspace is the top-level grouping that contains endpoints from both Spec Mode (imported specs) and Manual Mode (manually added endpoints) — see `spec_api_playground.md` section 3.1 and the `endpoints.workspace_id` field.
-   - After creation, the new workspace becomes active and Sidebar refreshes to show its (initially empty) endpoint list.
+   - The creation flow requires a workspace name.
+   - After creation, the new workspace becomes active and Sidebar refreshes to show its initially empty endpoint list.
+
+3. **Workspace management**
+   - Users can rename the active workspace from the workspace switcher or its workspace actions menu.
+   - Renaming updates the workspace name everywhere it is displayed without changing its ID, endpoints, or request history.
+   - The rename action must reject an empty name and preserve the previous name when validation fails.
 
 ### Out of Scope for Dock
 
@@ -137,6 +151,9 @@ Shows the list of endpoints belonging to the **active workspace**, sourced from 
 ```
 Sidebar
 ├── Workspace switcher (dropdown, shows active workspace name)
+│   ├── List of all workspaces
+│   ├── Select workspace
+│   └── Rename active workspace
 ├── Search/filter input
 ├── [+ Add Endpoint] — opens choice: "Import Spec" vs "Add Manually"
 ├── Grouped endpoint list
@@ -148,6 +165,10 @@ Sidebar
 
 ### Behavior Notes
 
+- The workspace switcher lists all available workspaces and clearly marks the active workspace.
+- Selecting a workspace changes the active workspace and refreshes the Sidebar and Main context to that workspace's endpoints. If the selected workspace has no endpoints, show the empty state.
+- Workspace switching must preserve each workspace's endpoint data independently; unsaved request-builder input may be discarded or preserved according to the application's state-management decision, but this behavior must be consistent.
+- Workspace names are user-editable. Renaming is available without recreating the workspace and does not alter references based on the workspace ID.
 - Endpoints from Spec Mode and Manual Mode appear in the **same list**, visually distinguished by a small badge/icon indicating `source_type` (`spec` vs `manual`) — consistent with the unified `endpoints` data model.
 - Clicking an endpoint loads its detail into Main; it does not open a new view/route by default (single-pane focus, avoids tab-sprawl complexity for MVP).
 - Search/filter matches on path, method, and tag/group name.
@@ -162,7 +183,7 @@ The primary work area. Content depends on what's selected in Sidebar (or empty s
 ### States
 
 1. **Empty state** (no endpoint selected)
-   - Shown when a workspace has no endpoints yet, or none is selected.
+   - Shown when the active workspace has no endpoints yet, or none is selected.
    - Prompts the two entry actions: "Import an OpenAPI spec" or "Add an endpoint manually" — mirrors the dual-mode value proposition front and center.
 
 2. **Endpoint selected — Spec Mode**

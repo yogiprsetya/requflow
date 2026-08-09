@@ -84,3 +84,18 @@ export type ApiEndpointDetail = {
   parameters: RequestParameter[];
   requestBody?: RequestBody;
 };
+
+export type Workspace = {
+  id: string;
+  name: string;
+  spec: string | null;
+};
+
+export type WorkspaceState = {
+  workspaces: Workspace[];
+  activeWorkspaceId: string;
+  createWorkspace: (name: string) => string | null;
+  renameWorkspace: (id: string, name: string) => boolean;
+  selectWorkspace: (id: string) => void;
+  setWorkspaceSpec: (id: string, spec: string) => void;
+};

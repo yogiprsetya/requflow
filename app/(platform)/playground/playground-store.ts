@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { IMPORTED_SPEC_STORAGE_KEY, IMPORTED_SPEC_UPDATED_EVENT } from '../constant';
+import { IMPORTED_SPEC_UPDATED_EVENT } from '../constant';
 import { parseStoredSpec } from '../openapi';
 import { ApiEndpointDetail, PlaygroundState, PlaygroundTab } from '../types';
+import { getActiveWorkspace, useWorkspaceStore } from '../workspace-store';
 
 const createRequestTab = (endpointId: string): PlaygroundTab => {
   return { id: `${endpointId}:${Date.now()}:${Math.random()}`, endpointId };
@@ -95,18 +96,19 @@ export const usePlaygroundStore = create<PlaygroundState>()(
 export const loadEndpointDetails = (): ApiEndpointDetail[] => {
   if (typeof window === 'undefined') return [];
 
-  const storedSpec = localStorage.getItem(IMPORTED_SPEC_STORAGE_KEY);
+  const workspace = getActiveWorkspace(useWorkspaceStore.getState());
+  const storedSpec = workspace?.spec ?? null;
   if (!storedSpec) return [];
 
   return parseStoredSpec(storedSpec);
 };
 
-export const useEndpointById = (id: string | null): ApiEndpointDetail | undefined => {
-  if (typeof window === 'undefined') return undefined;
+// export const useEndpointById = (id: string | null): ApiEndpointDetail | undefined => {
+//   if (typeof window === 'undefined') return undefined;
 
-  const endpoints = loadEndpointDetails();
-  return endpoints.find((endpoint) => endpoint.id === id);
-};
+//   const endpoints = loadEndpointDetails();
+//   return endpoints.find((endpoint) => endpoint.id === id);
+// };
 
 export const subscribeToSpecChanges = (callback: () => void): (() => void) => {
   if (typeof window === 'undefined') return () => {};
