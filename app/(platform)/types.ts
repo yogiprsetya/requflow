@@ -90,6 +90,13 @@ export type Workspace = {
   id: string;
   name: string;
   spec: string | null;
+  environments: Environment[];
+  activeEnvironmentId: string;
+};
+
+export type Environment = {
+  id: string;
+  name: string;
 };
 
 export type WorkspaceState = {
@@ -99,4 +106,5 @@ export type WorkspaceState = {
   renameWorkspace: (id: string, name: string) => boolean;
   selectWorkspace: (id: string) => void;
   setWorkspaceSpec: (id: string, spec: string) => void;
+  selectEnvironment: (workspaceId: string, environmentId: string) => void;
 };

@@ -2,12 +2,20 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { WorkspaceState } from './types';
+import { Environment, WorkspaceState } from './types';
+
+const defaultEnvironments: Environment[] = [
+  { id: 'development', name: 'Development' },
+  { id: 'staging', name: 'Staging' },
+  { id: 'production', name: 'Production' },
+];
 
 const defaultWorkspace = {
   id: 'workspace:personal',
   name: 'Personal Workspace',
   spec: null,
+  environments: defaultEnvironments,
+  activeEnvironmentId: defaultEnvironments[0].id,
 };
 
 const normalizeName = (name: string): string => name.trim();
@@ -25,6 +33,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           id: `workspace:${Date.now()}:${Math.random()}`,
           name: normalizedName,
           spec: null,
+          environments: defaultEnvironments,
+          activeEnvironmentId: defaultEnvironments[0].id,
         };
         set((state) => ({
           workspaces: [...state.workspaces, workspace],
@@ -56,8 +66,31 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             workspace.id === id ? { ...workspace, spec } : workspace
           ),
         })),
+      selectEnvironment: (workspaceId, environmentId) =>
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace.id === workspaceId &&
+            workspace.environments.some((environment) => environment.id === environmentId)
+              ? { ...workspace, activeEnvironmentId: environmentId }
+              : workspace
+          ),
+        })),
     }),
-    { name: 'requflow:workspaces' }
+    {
+      name: 'requflow:workspaces',
+      version: 1,
+      migrate: (persistedState) => {
+        const state = persistedState as WorkspaceState;
+        return {
+          ...state,
+          workspaces: state.workspaces.map((workspace) => ({
+            ...workspace,
+            environments: workspace.environments ?? defaultEnvironments,
+            activeEnvironmentId: workspace.activeEnvironmentId ?? defaultEnvironments[0].id,
+          })),
+        };
+      },
+    }
   )
 );
 
