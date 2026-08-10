@@ -15,6 +15,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       activeEndpointId: null,
       activeRequestTabId: null,
       requestTabs: [],
+      reset: () => set({ activeEndpointId: null, activeRequestTabId: null, requestTabs: [] }),
       setActiveEndpointId: (id) => set({ activeEndpointId: id }),
       openEndpoint: (endpointId) =>
         set((state) => {

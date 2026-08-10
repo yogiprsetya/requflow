@@ -21,7 +21,7 @@ const PlatformPage = () => {
   const closeRequest = usePlaygroundStore((state) => state.closeRequest);
   const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
-  const setActiveEndpointId = usePlaygroundStore((state) => state.setActiveEndpointId);
+  const resetPlayground = usePlaygroundStore((state) => state.reset);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
   const { getResponse, isSending, sendRequest } = useRequestExecution();
@@ -33,8 +33,8 @@ const PlatformPage = () => {
   }, [activeWorkspaceId]);
 
   useEffect(() => {
-    setActiveEndpointId(null);
-  }, [activeWorkspaceId, setActiveEndpointId]);
+    resetPlayground();
+  }, [activeWorkspaceId, resetPlayground]);
 
   useEffect(() => {
     if (!requestTabs.length && endpoints[0]) {

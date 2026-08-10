@@ -55,6 +55,7 @@ export type PlaygroundState = {
   activeEndpointId: string | null;
   activeRequestTabId: string | null;
   requestTabs: PlaygroundTab[];
+  reset: () => void;
   setActiveEndpointId: (id: string | null) => void;
   openEndpoint: (endpointId: string) => void;
   newRequest: (endpointId: string | null) => void;
