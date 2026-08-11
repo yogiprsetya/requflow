@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { ImportSpecDialog } from '~/app/(platform)/dialog-import-spec';
 import { SidebarTrigger } from '../../components/ui/sidebar';
 import { WorkspaceSwitcher } from './workspace-switcher';
-import { Check, Moon, Sun } from 'lucide-react';
+import { Check, FileUp, FolderInput, Moon, Plus, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
@@ -16,6 +17,7 @@ import {
 import { cn } from '~/lib/css';
 
 export const PlatformNavbar = () => {
+  const [isImportSpecOpen, setIsImportSpecOpen] = useState(false);
   const { setTheme, theme } = useTheme();
 
   return (
@@ -32,9 +34,26 @@ export const PlatformNavbar = () => {
       </div>
 
       <div className="flex items-center gap-4">
+        <ImportSpecDialog open={isImportSpecOpen} onOpenChange={setIsImportSpecOpen} trigger={() => null} />
+
         <div className="flex items-center gap-2">
           <WorkspaceSwitcher />
-          <ImportSpecDialog />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button />}>
+              <FolderInput /> Spec
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsImportSpecOpen(true)}>
+                <FileUp /> Import spec
+              </DropdownMenuItem>
+
+              <DropdownMenuItem disabled>
+                <Plus /> Create spec
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex items-center gap-2">

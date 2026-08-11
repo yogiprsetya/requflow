@@ -10,7 +10,11 @@ import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';
 
-export const useImportSpec = () => {
+type UseImportSpecOptions = {
+  onOpenChange?: (open: boolean) => void;
+};
+
+export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<ImportMethod>('file');
   const [file, setFile] = useState<File | null>(null);
@@ -35,11 +39,12 @@ export const useImportSpec = () => {
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
+    onOpenChange?.(nextOpen);
     if (!nextOpen) reset();
   };
 
   const handleOpen = () => {
-    setOpen(true);
+    handleOpenChange(true);
   };
 
   const handleCancel = () => {
@@ -90,6 +95,7 @@ export const useImportSpec = () => {
       setWorkspaceSpec(targetWorkspaceId, serializedSpec);
       window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
+      onOpenChange?.(false);
       reset();
     } catch (importError) {
       setError(importError instanceof Error ? importError.message : 'Unable to import the OpenAPI spec.');

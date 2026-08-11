@@ -54,6 +54,7 @@ export const WorkspaceSwitcher = () => {
 
   const handleSubmit = () => {
     const name = workspaceName.trim();
+
     if (!name) {
       setNameError('Enter a workspace name.');
       return;
@@ -125,6 +126,7 @@ export const WorkspaceSwitcher = () => {
               }}
               aria-invalid={Boolean(nameError)}
             />
+
             {nameError && <p className="text-destructive text-xs">{nameError}</p>}
           </div>
 

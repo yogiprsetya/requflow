@@ -18,10 +18,12 @@ import { useImportSpec } from './use-import-spec';
 import { ReactNode } from 'react';
 
 type ImportSpecDialogProps = {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   trigger?: (onOpen: () => void) => ReactNode;
 };
 
-export const ImportSpecDialog = ({ trigger }: ImportSpecDialogProps) => {
+export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }: ImportSpecDialogProps) => {
   const {
     error,
     file,
@@ -35,11 +37,13 @@ export const ImportSpecDialog = ({ trigger }: ImportSpecDialogProps) => {
     hasSource,
     isImporting,
     method,
-    open,
+    open: internalOpen,
     setWorkspace,
     url,
     workspace,
-  } = useImportSpec();
+  } = useImportSpec({ onOpenChange });
+
+  const open = controlledOpen ?? internalOpen;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
