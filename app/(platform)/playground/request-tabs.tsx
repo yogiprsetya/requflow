@@ -10,7 +10,7 @@ import {
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { cn } from '~/lib/css';
 import { ApiEndpointDetail } from '../types';
-import { methodTextClass } from '../utils';
+import { methodTextClass } from '../utils/helpers';
 
 type RequestTab = { id: string; endpointId: string };
 

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { executeRequest } from './request-executor';
+import { executeRequest } from './utils/request-executor';
 import { PlaygroundRequest, PlaygroundResponse } from './types';
 
 export const useRequestExecution = () => {
   const controllersRef = useRef(new Map<string, AbortController>());
   const requestIdsRef = useRef(new Map<string, number>());
+
   const [responses, setResponses] = useState<Record<string, PlaygroundResponse | null>>({});
   const [sendingTabs, setSendingTabs] = useState<Record<string, boolean>>({});
 

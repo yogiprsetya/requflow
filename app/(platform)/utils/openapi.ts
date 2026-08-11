@@ -1,4 +1,4 @@
-import { httpMethods } from './constant';
+import { httpMethods } from '../constant';
 import {
   ApiEndpoint,
   ApiEndpointDetail,
@@ -6,7 +6,7 @@ import {
   RequestBody,
   RequestParameter,
   SchemaObject,
-} from './types';
+} from '../types';
 
 export type ApiGroup = {
   tag: string;

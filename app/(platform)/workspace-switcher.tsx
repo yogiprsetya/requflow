@@ -25,6 +25,7 @@ export const WorkspaceSwitcher = () => {
   const [dialogMode, setDialogMode] = useState<'create' | 'rename' | null>(null);
   const [workspaceName, setWorkspaceName] = useState('');
   const [nameError, setNameError] = useState('');
+
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
@@ -100,6 +101,7 @@ export const WorkspaceSwitcher = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{dialogMode === 'rename' ? 'Rename workspace' : 'Add workspace'}</DialogTitle>
+
             <DialogDescription>
               {dialogMode === 'rename'
                 ? 'Choose a new name for this workspace.'
@@ -109,6 +111,7 @@ export const WorkspaceSwitcher = () => {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="workspace-name">Workspace name</Label>
+
             <Input
               id="workspace-name"
               autoFocus
@@ -129,6 +132,7 @@ export const WorkspaceSwitcher = () => {
             <Button variant="outline" onClick={() => handleDialogChange(false)}>
               Cancel
             </Button>
+
             <Button onClick={handleSubmit}>{dialogMode === 'rename' ? 'Rename' : 'Create'}</Button>
           </DialogFooter>
         </DialogContent>

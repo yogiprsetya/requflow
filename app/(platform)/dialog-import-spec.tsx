@@ -15,9 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { useImportSpec } from './use-import-spec';
+import { ReactNode } from 'react';
 
 type ImportSpecDialogProps = {
-  trigger?: (onOpen: () => void) => React.ReactNode;
+  trigger?: (onOpen: () => void) => ReactNode;
 };
 
 export const ImportSpecDialog = ({ trigger }: ImportSpecDialogProps) => {

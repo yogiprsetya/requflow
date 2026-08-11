@@ -5,7 +5,7 @@ import {
   importSpecFromUrl,
   isSupportedSpecFile,
   validateImportedSpec,
-} from './openapi-import';
+} from './utils/openapi-import';
 import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';
@@ -18,6 +18,7 @@ export const useImportSpec = () => {
   const [workspace, setWorkspace] = useState('current');
   const [error, setError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
+
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const setWorkspaceSpec = useWorkspaceStore((state) => state.setWorkspaceSpec);
 

@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { ImportSpecDialog } from '~/app/(platform)/import-spec-dialog';
+import { ImportSpecDialog } from '~/app/(platform)/dialog-import-spec';
 import { SidebarTrigger } from '../../components/ui/sidebar';
 import { WorkspaceSwitcher } from './workspace-switcher';
 import { Check, Moon, Sun } from 'lucide-react';

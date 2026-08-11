@@ -1,4 +1,4 @@
-import { type ApiEndpoint } from './types';
+import { type ApiEndpoint } from '../types';
 
 export const methodBadgeClass = (method: ApiEndpoint['method']): string => {
   switch (method) {

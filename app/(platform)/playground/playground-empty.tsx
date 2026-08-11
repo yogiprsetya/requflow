@@ -1,6 +1,6 @@
 import { Braces, FileUp, MousePointerClick } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { ImportSpecDialog } from '../import-spec-dialog';
+import { ImportSpecDialog } from '../dialog-import-spec';
 import {
   Empty,
   EmptyContent,

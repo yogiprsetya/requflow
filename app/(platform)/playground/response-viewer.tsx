@@ -1,6 +1,6 @@
 'use client';
 import { Check, ChevronRight, ChevronsUpDown, Clock3, Copy, FileJson, Gauge } from 'lucide-react';
-import { useState } from 'react';
+import { useState, ReactNode } from 'react';
 import { Badge } from '~/components/ui/badge';
 import { Button, buttonVariants } from '~/components/ui/button';
 import { ScrollArea } from '~/components/ui/scroll-area';
@@ -179,7 +179,7 @@ const JsonNode = ({
   );
 };
 
-const JsonKey = ({ children }: { children: React.ReactNode }) => (
+const JsonKey = ({ children }: { children: ReactNode }) => (
   <span className="text-sky-600 dark:text-sky-400">{children}</span>
 );
 
@@ -201,7 +201,7 @@ const JsonValue = ({ value }: { value: unknown }) => {
 
 const formatBytes = (bytes: number) => (bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`);
 
-const Metric = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+const Metric = ({ icon, label, value }: { icon: ReactNode; label: string; value: string }) => (
   <div className="bg-muted/10 rounded border p-3">
     <div className="text-muted-foreground flex items-center gap-2 text-xs">
       {icon}

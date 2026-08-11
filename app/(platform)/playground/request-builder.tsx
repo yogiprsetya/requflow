@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, ReactNode } from 'react';
 import { Check, Copy, KeyRound, Link2, Play, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { jsonValidationError, methodTextClass } from '../utils';
+import { jsonValidationError, methodTextClass } from '../utils/helpers';
 
 type KeyValue = { id: number; key: string; value: string; enabled: boolean };
 
@@ -363,8 +363,8 @@ const JsonEditor = ({
   );
 };
 
-const highlightJson = (value: string): React.ReactNode[] => {
-  const tokens: React.ReactNode[] = [];
+const highlightJson = (value: string): ReactNode[] => {
+  const tokens: ReactNode[] = [];
   const tokenPattern = /("(?:\\.|[^"\\])*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}[\],:])/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
@@ -466,7 +466,7 @@ const ParameterSection = ({
   );
 };
 
-const EmptySection = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
+const EmptySection = ({ icon, text }: { icon: ReactNode; text: string }) => (
   <div className="text-muted-foreground flex flex-col items-center rounded-lg border border-dashed p-8 text-center text-sm">
     {icon}
     <p className="mt-2">{text}</p>

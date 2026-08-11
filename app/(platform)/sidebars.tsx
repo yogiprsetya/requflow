@@ -24,7 +24,7 @@ import { cn } from '~/lib/css';
 import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
 import { usePlaygroundStore } from './playground/playground-store';
-import { methodBadgeClass } from './utils';
+import { methodBadgeClass } from './utils/helpers';
 
 export const PlatformSidebar = () => {
   const { open } = useSidebar();

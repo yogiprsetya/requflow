@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { IMPORTED_SPEC_UPDATED_EVENT } from './constant';
-import { groupEndpoints, type ApiGroup, parseStoredSpec } from './openapi';
+import { groupEndpoints, type ApiGroup, parseStoredSpec } from './utils/openapi';
 import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
 
 export const useLocalSpec = (): ApiGroup[] => {
   const [apiGroups, setApiGroups] = useState<ApiGroup[]>([]);
+
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
 
@@ -12,6 +13,7 @@ export const useLocalSpec = (): ApiGroup[] => {
     const loadGroups = () => {
       const workspace = getActiveWorkspace({ activeWorkspaceId, workspaces });
       const storedSpec = workspace?.spec ?? null;
+
       if (!storedSpec) {
         setApiGroups([]);
         return;

@@ -7,20 +7,18 @@ import {
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
 
-export const WorkspaceBreadcrumb = () => {
-  return (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink>Workspace</BreadcrumbLink>
-        </BreadcrumbItem>
+export const WorkspaceBreadcrumb = () => (
+  <Breadcrumb>
+    <BreadcrumbList>
+      <BreadcrumbItem>
+        <BreadcrumbLink>Workspace</BreadcrumbLink>
+      </BreadcrumbItem>
 
-        <BreadcrumbSeparator />
+      <BreadcrumbSeparator />
 
-        <BreadcrumbItem>
-          <BreadcrumbPage>Collection</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
-  );
-};
+      <BreadcrumbItem>
+        <BreadcrumbPage>Collection</BreadcrumbPage>
+      </BreadcrumbItem>
+    </BreadcrumbList>
+  </Breadcrumb>
+);

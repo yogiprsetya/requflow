@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { IMPORTED_SPEC_UPDATED_EVENT } from '../constant';
-import { parseStoredSpec } from '../openapi';
+import { parseStoredSpec } from '../utils/openapi';
 import { ApiEndpointDetail, PlaygroundState, PlaygroundTab } from '../types';
 import { getActiveWorkspace, useWorkspaceStore } from '../workspace-store';
 
