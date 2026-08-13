@@ -35,19 +35,6 @@ export const usePlaygroundStore = create<PlaygroundState>()(
             requestTabs: [...state.requestTabs, tab],
           };
         }),
-      newRequest: (endpointId) =>
-        set((state) => {
-          const resolvedEndpointId = endpointId ?? state.activeEndpointId ?? state.requestTabs[0]?.endpointId;
-
-          if (!resolvedEndpointId) return state;
-
-          const tab = createRequestTab(resolvedEndpointId);
-          return {
-            activeEndpointId: resolvedEndpointId,
-            activeRequestTabId: tab.id,
-            requestTabs: [...state.requestTabs, tab],
-          };
-        }),
       closeRequest: (tabId) =>
         set((state) => {
           const tabIndex = state.requestTabs.findIndex((tab) => tab.id === tabId);
@@ -99,9 +86,9 @@ export const loadEndpointDetails = (): ApiEndpointDetail[] => {
 
   const workspace = getActiveWorkspace(useWorkspaceStore.getState());
   const storedSpec = workspace?.spec ?? null;
-  if (!storedSpec) return [];
+  const specEndpoints = storedSpec ? parseStoredSpec(storedSpec) : [];
 
-  return parseStoredSpec(storedSpec);
+  return [...specEndpoints, ...(workspace?.manualEndpoints ?? [])];
 };
 
 // export const useEndpointById = (id: string | null): ApiEndpointDetail | undefined => {

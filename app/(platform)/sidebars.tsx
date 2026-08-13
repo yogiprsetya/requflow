@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { FileText, Folder, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FileText, Folder, Plus, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '~/components/ui/empty';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
 import {
@@ -23,15 +24,22 @@ import { useLocalSpec } from './use-local-spec';
 import { cn } from '~/lib/css';
 import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
-import { usePlaygroundStore } from './playground/playground-store';
+import { loadEndpointDetails, subscribeToSpecChanges, usePlaygroundStore } from './playground/playground-store';
 import { methodBadgeClass } from './utils/helpers';
+import { AddManualEndpointDialog } from './dialog-add-manual-endpoint';
 
 export const PlatformSidebar = () => {
   const { open } = useSidebar();
   const apiGroups = useLocalSpec();
+  const [manualDialogOpen, setManualDialogOpen] = useState(false);
+  const [manualEndpoints, setManualEndpoints] = useState(loadEndpointDetails);
   const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+  useEffect(() => subscribeToSpecChanges(() => setManualEndpoints(loadEndpointDetails())), []);
+
+  const groups = [...apiGroups, ...groupManualEndpoints(manualEndpoints)];
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="md:top-14 md:left-12!">
@@ -42,7 +50,7 @@ export const PlatformSidebar = () => {
       </SidebarHeader>
 
       <SidebarContent>
-        {apiGroups.length === 0 ? (
+        {groups.length === 0 ? (
           <Empty className="gap-3 px-4 py-8 group-data-[collapsible=icon]:hidden">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -55,7 +63,7 @@ export const PlatformSidebar = () => {
             </EmptyHeader>
           </Empty>
         ) : (
-          apiGroups.map((group) => (
+          groups.map((group) => (
             <Collapsible
               key={group.tag}
               open={
@@ -91,6 +99,12 @@ export const PlatformSidebar = () => {
                               {endpoint.method}
                             </Badge>
 
+                            {endpoint.sourceType === 'manual' && (
+                              <Badge variant="outline" className="text-[0.55rem]">
+                                manual
+                              </Badge>
+                            )}
+
                             <span title={endpoint.summary}>{endpoint.path}</span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -105,6 +119,15 @@ export const PlatformSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter>
+        <Button
+          variant="outline"
+          className="w-full group-data-[collapsible=icon]:px-0"
+          onClick={() => setManualDialogOpen(true)}
+        >
+          <Plus data-icon="inline-start" />
+          <span className="group-data-[collapsible=icon]:hidden">Add endpoint</span>
+        </Button>
+
         <div className="bg-sidebar-accent/60 flex items-center gap-2 rounded-md p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1.5">
           <Sparkles className="text-sidebar-primary size-4 shrink-0" />
           <p className="text-sidebar-foreground/70 text-[0.65rem] leading-tight group-data-[collapsible=icon]:hidden">
@@ -112,6 +135,12 @@ export const PlatformSidebar = () => {
           </p>
         </div>
       </SidebarFooter>
+      <AddManualEndpointDialog open={manualDialogOpen} onOpenChange={setManualDialogOpen} />
     </Sidebar>
   );
+};
+
+const groupManualEndpoints = (endpoints: ReturnType<typeof loadEndpointDetails>) => {
+  const manual = endpoints.filter((endpoint) => endpoint.sourceType === 'manual');
+  return manual.length ? [{ tag: 'Manual', endpoints: manual }] : [];
 };

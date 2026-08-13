@@ -338,9 +338,10 @@ const JsonEditor = ({
 
   return (
     <div
-      className={`bg-muted/20 focus-within:ring-ring/50 relative min-h-64 overflow-hidden rounded-lg border focus-within:ring-3 ${
+      className={cn(
+        'bg-muted/20 focus-within:ring-ring/50 relative min-h-64 overflow-hidden rounded-lg border focus-within:ring-3',
         hasError ? 'border-destructive' : 'border-input focus-within:border-ring'
-      }`}
+      )}
     >
       <pre
         ref={highlightRef}

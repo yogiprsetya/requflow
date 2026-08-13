@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { AddManualEndpointDialog } from './dialog-add-manual-endpoint';
 import { RequestBuilder } from './playground/request-builder';
 import { ResponseViewer } from './playground/response-viewer';
 import { loadEndpointDetails, subscribeToSpecChanges, usePlaygroundStore } from './playground/playground-store';
@@ -17,13 +18,13 @@ const PlatformPage = () => {
   const activeRequestTabId = usePlaygroundStore((state) => state.activeRequestTabId);
   const requestTabs = usePlaygroundStore((state) => state.requestTabs);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
-  const newRequest = usePlaygroundStore((state) => state.newRequest);
   const closeRequest = usePlaygroundStore((state) => state.closeRequest);
   const closeOtherRequests = usePlaygroundStore((state) => state.closeOtherRequests);
   const setActiveRequestTab = usePlaygroundStore((state) => state.setActiveRequestTab);
   const resetPlayground = usePlaygroundStore((state) => state.reset);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const [endpoints, setEndpoints] = useState<ApiEndpointDetail[]>([]);
+  const [manualDialogOpen, setManualDialogOpen] = useState(false);
   const { getResponse, isSending, sendRequest } = useRequestExecution();
 
   useEffect(() => {
@@ -60,7 +61,13 @@ const PlatformPage = () => {
           onSelect={setActiveRequestTab}
         />
 
-        <Button variant="ghost" size="icon-lg" className="mr-1" onClick={() => newRequest(endpoint.id)}>
+        <Button
+          variant="ghost"
+          size="icon-lg"
+          className="mr-1"
+          aria-label="Add endpoint manually"
+          onClick={() => setManualDialogOpen(true)}
+        >
           <Plus data-icon="inline-start" />
         </Button>
       </div>
@@ -71,8 +78,11 @@ const PlatformPage = () => {
           endpoint={endpoint}
           onSend={(request) => activeRequestTabId && sendRequest(activeRequestTabId, request)}
         />
+
         <ResponseViewer response={response} isLoading={isSending(activeRequestTabId)} />
       </div>
+
+      <AddManualEndpointDialog open={manualDialogOpen} onOpenChange={setManualDialogOpen} />
     </div>
   );
 };

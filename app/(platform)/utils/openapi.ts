@@ -45,6 +45,7 @@ export const groupEndpoints = (endpoints: ApiEndpointDetail[]): ApiGroup[] => {
       method: endpoint.method,
       path: endpoint.path,
       summary: endpoint.summary,
+      sourceType: endpoint.sourceType,
     });
     groups.set(tag, group);
   }
@@ -83,6 +84,7 @@ const parseEndpoints = (
         id: `${method}:${path}`,
         method,
         path,
+        sourceType: 'spec',
         baseUrl,
         summary: typeof operation.summary === 'string' ? operation.summary : undefined,
         description: typeof operation.description === 'string' ? operation.description : undefined,

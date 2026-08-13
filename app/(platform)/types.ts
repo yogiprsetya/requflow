@@ -28,6 +28,7 @@ export type ApiEndpoint = {
   method: (typeof httpMethods)[number];
   path: string;
   summary?: string;
+  sourceType?: 'spec' | 'manual';
 };
 
 export type SchemaObject = {
@@ -58,7 +59,6 @@ export type PlaygroundState = {
   reset: () => void;
   setActiveEndpointId: (id: string | null) => void;
   openEndpoint: (endpointId: string) => void;
-  newRequest: (endpointId: string | null) => void;
   closeRequest: (tabId: string) => void;
   closeOtherRequests: (tabId: string) => void;
   setActiveRequestTab: (tabId: string) => void;
@@ -77,6 +77,7 @@ export type ApiEndpointDetail = {
   id: string;
   method: ApiEndpoint['method'];
   path: string;
+  sourceType?: 'spec' | 'manual';
   baseUrl?: string;
   summary?: string;
   description?: string;
@@ -90,6 +91,7 @@ export type Workspace = {
   id: string;
   name: string;
   spec: string | null;
+  manualEndpoints: ApiEndpointDetail[];
   environments: Environment[];
   activeEnvironmentId: string;
 };
@@ -106,5 +108,6 @@ export type WorkspaceState = {
   renameWorkspace: (id: string, name: string) => boolean;
   selectWorkspace: (id: string) => void;
   setWorkspaceSpec: (id: string, spec: string) => void;
+  addManualEndpoint: (id: string, endpoint: ApiEndpointDetail) => void;
   selectEnvironment: (workspaceId: string, environmentId: string) => void;
 };

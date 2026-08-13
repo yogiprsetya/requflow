@@ -116,6 +116,7 @@ export const WorkspaceSwitcher = () => {
             <Input
               id="workspace-name"
               autoFocus
+              maxLength={50}
               value={workspaceName}
               onChange={(event) => {
                 setWorkspaceName(event.target.value);

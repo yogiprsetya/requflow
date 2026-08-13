@@ -14,6 +14,7 @@ const defaultWorkspace = {
   id: 'workspace:personal',
   name: 'Personal Workspace',
   spec: null,
+  manualEndpoints: [],
   environments: defaultEnvironments,
   activeEnvironmentId: defaultEnvironments[0].id,
 };
@@ -33,6 +34,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           id: `workspace:${Date.now()}:${Math.random()}`,
           name: normalizedName,
           spec: null,
+          manualEndpoints: [],
           environments: defaultEnvironments,
           activeEnvironmentId: defaultEnvironments[0].id,
         };
@@ -66,6 +68,14 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             workspace.id === id ? { ...workspace, spec } : workspace
           ),
         })),
+      addManualEndpoint: (id, endpoint) =>
+        set((state) => ({
+          workspaces: state.workspaces.map((workspace) =>
+            workspace.id === id
+              ? { ...workspace, manualEndpoints: [...workspace.manualEndpoints, endpoint] }
+              : workspace
+          ),
+        })),
       selectEnvironment: (workspaceId, environmentId) =>
         set((state) => ({
           workspaces: state.workspaces.map((workspace) =>
@@ -85,6 +95,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           ...state,
           workspaces: state.workspaces.map((workspace) => ({
             ...workspace,
+            manualEndpoints: workspace.manualEndpoints ?? [],
             environments: workspace.environments ?? defaultEnvironments,
             activeEnvironmentId: workspace.activeEnvironmentId ?? defaultEnvironments[0].id,
           })),
