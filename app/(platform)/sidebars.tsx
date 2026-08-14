@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Folder } from 'lucide-react';
+import { FileText, Folder, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '~/components/ui/empty';
@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/component
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -24,26 +25,26 @@ import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
 import { usePlaygroundStore } from './playground/playground-store';
 import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
-import type { ApiEndpointDetail } from './types';
+import type { ApiEndpoint, ApiEndpointDetail } from './types';
 import { methodBadgeClass } from './utils/helpers';
 
 export const PlatformSidebar = () => {
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
   const { open } = useSidebar();
   const apiGroups = useLocalSpec();
   const manualEndpoints = useWorkspaceStore((state) => getActiveWorkspace(state).manualEndpoints);
   const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const groups = [...apiGroups, ...groupManualEndpoints(manualEndpoints)];
+  const groups = filterGroups([...apiGroups, ...groupManualEndpoints(manualEndpoints)], searchQuery);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="md:top-14 md:left-12!">
       <SidebarHeader className="mt-1 mb-4">
         <WorkspaceBreadcrumb />
         <Separator className="bg-secondary mb-1" />
-        <SearchField collapsed={!open} />
+        <SearchField collapsed={!open} value={searchQuery} onChange={setSearchQuery} />
       </SidebarHeader>
 
       <SidebarContent>
@@ -54,9 +55,13 @@ export const PlatformSidebar = () => {
                 <FileText aria-hidden="true" />
               </EmptyMedia>
 
-              <EmptyTitle>No endpoints yet</EmptyTitle>
+              <EmptyTitle>{searchQuery.trim() ? 'No matching endpoints' : 'No endpoints yet'}</EmptyTitle>
 
-              <EmptyDescription>Import an OpenAPI spec to explore its endpoints here.</EmptyDescription>
+              <EmptyDescription>
+                {searchQuery.trim()
+                  ? 'Try a different path, method, or group name.'
+                  : 'Import an OpenAPI spec to explore its endpoints here.'}
+              </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
@@ -114,11 +119,37 @@ export const PlatformSidebar = () => {
           ))
         )}
       </SidebarContent>
+
+      <SidebarFooter>
+        <div className="bg-sidebar-accent/60 flex items-center gap-2 rounded-md p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1.5">
+          <Sparkles className="text-sidebar-primary size-4 shrink-0" />
+          <p className="text-sidebar-foreground/70 text-[0.65rem] leading-tight group-data-[collapsible=icon]:hidden">
+            Upgrade your workspace for more capacity.
+          </p>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 };
 
-const groupManualEndpoints = (endpoints: ApiEndpointDetail[]) => {
+type SidebarEndpoint = Pick<ApiEndpoint, 'method' | 'path' | 'summary' | 'sourceType'>;
+type SidebarGroup = { tag: string; endpoints: SidebarEndpoint[] };
+
+const groupManualEndpoints = (endpoints: ApiEndpointDetail[]): SidebarGroup[] => {
   const manual = endpoints.filter((endpoint) => endpoint.sourceType === 'manual');
   return manual.length ? [{ tag: 'Manual', endpoints: manual }] : [];
+};
+
+const filterGroups = (groups: SidebarGroup[], query: string): SidebarGroup[] => {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) return groups;
+
+  return groups
+    .map((group) => ({
+      ...group,
+      endpoints: group.endpoints.filter((endpoint) =>
+        [group.tag, endpoint.path, endpoint.method].some((value) => value.toLowerCase().includes(normalizedQuery))
+      ),
+    }))
+    .filter((group) => group.endpoints.length > 0);
 };
