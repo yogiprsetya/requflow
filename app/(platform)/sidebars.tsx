@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { FileText, Folder, Plus, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Folder } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '~/components/ui/empty';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -24,20 +22,19 @@ import { useLocalSpec } from './use-local-spec';
 import { cn } from '~/lib/css';
 import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
-import { loadEndpointDetails, subscribeToSpecChanges, usePlaygroundStore } from './playground/playground-store';
+import { usePlaygroundStore } from './playground/playground-store';
+import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
+import type { ApiEndpointDetail } from './types';
 import { methodBadgeClass } from './utils/helpers';
-import { AddManualEndpointDialog } from './dialog-add-manual-endpoint';
 
 export const PlatformSidebar = () => {
-  const { open } = useSidebar();
-  const apiGroups = useLocalSpec();
-  const [manualDialogOpen, setManualDialogOpen] = useState(false);
-  const [manualEndpoints, setManualEndpoints] = useState(loadEndpointDetails);
-  const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
-  const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
-  useEffect(() => subscribeToSpecChanges(() => setManualEndpoints(loadEndpointDetails())), []);
+  const { open } = useSidebar();
+  const apiGroups = useLocalSpec();
+  const manualEndpoints = useWorkspaceStore((state) => getActiveWorkspace(state).manualEndpoints);
+  const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
+  const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
 
   const groups = [...apiGroups, ...groupManualEndpoints(manualEndpoints)];
 
@@ -117,30 +114,11 @@ export const PlatformSidebar = () => {
           ))
         )}
       </SidebarContent>
-
-      <SidebarFooter>
-        <Button
-          variant="outline"
-          className="w-full group-data-[collapsible=icon]:px-0"
-          onClick={() => setManualDialogOpen(true)}
-        >
-          <Plus data-icon="inline-start" />
-          <span className="group-data-[collapsible=icon]:hidden">Add endpoint</span>
-        </Button>
-
-        <div className="bg-sidebar-accent/60 flex items-center gap-2 rounded-md p-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1.5">
-          <Sparkles className="text-sidebar-primary size-4 shrink-0" />
-          <p className="text-sidebar-foreground/70 text-[0.65rem] leading-tight group-data-[collapsible=icon]:hidden">
-            Upgrade your workspace for more capacity.
-          </p>
-        </div>
-      </SidebarFooter>
-      <AddManualEndpointDialog open={manualDialogOpen} onOpenChange={setManualDialogOpen} />
     </Sidebar>
   );
 };
 
-const groupManualEndpoints = (endpoints: ReturnType<typeof loadEndpointDetails>) => {
+const groupManualEndpoints = (endpoints: ApiEndpointDetail[]) => {
   const manual = endpoints.filter((endpoint) => endpoint.sourceType === 'manual');
   return manual.length ? [{ tag: 'Manual', endpoints: manual }] : [];
 };
