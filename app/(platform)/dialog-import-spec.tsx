@@ -142,7 +142,9 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             }
           >
             <SelectTrigger id="workspace-target" className="w-full">
-              <SelectValue />
+              <span className="flex flex-1 text-left">
+                {workspaceOptions.find((workspaceOption) => workspaceOption.id === workspace)?.name}
+              </span>
             </SelectTrigger>
 
             <SelectContent>
