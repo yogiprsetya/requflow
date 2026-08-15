@@ -6,7 +6,8 @@ import {
   isSupportedSpecFile,
   validateImportedSpec,
 } from './utils/openapi-import';
-import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
+import { getImportWorkspaceOptions, resolveImportWorkspaceId } from './import-workspace-target';
+import { useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';
 
@@ -15,29 +16,32 @@ type UseImportSpecOptions = {
 };
 
 export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const workspaces = useWorkspaceStore((state) => state.workspaces);
+  const setWorkspaceSpec = useWorkspaceStore((state) => state.setWorkspaceSpec);
+
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<ImportMethod>('file');
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
-  const [workspace, setWorkspace] = useState('current');
+  const [workspace, setWorkspace] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
-  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
-  const setWorkspaceSpec = useWorkspaceStore((state) => state.setWorkspaceSpec);
-
   const hasSource = method === 'file' ? file !== null : url.trim().length > 0;
+  const workspaceOptions = getImportWorkspaceOptions(workspaces, activeWorkspaceId);
 
   const reset = () => {
     setMethod('file');
     setFile(null);
     setUrl('');
-    setWorkspace('current');
+    setWorkspace(null);
     setError('');
     setIsImporting(false);
   };
 
   const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) setWorkspace(null);
     setOpen(nextOpen);
     onOpenChange?.(nextOpen);
     if (!nextOpen) reset();
@@ -90,8 +94,11 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
       }
       const serializedSpec = validateImportedSpec(source);
 
-      const targetWorkspaceId =
-        workspace === 'current' ? activeWorkspaceId : getActiveWorkspace(useWorkspaceStore.getState()).id;
+      const targetWorkspaceId = resolveImportWorkspaceId(
+        workspace ?? activeWorkspaceId,
+        workspaces,
+        activeWorkspaceId
+      );
       setWorkspaceSpec(targetWorkspaceId, serializedSpec);
       window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
@@ -120,6 +127,7 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
     open,
     setWorkspace,
     url,
-    workspace,
+    workspace: workspace ?? activeWorkspaceId,
+    workspaceOptions,
   };
 };

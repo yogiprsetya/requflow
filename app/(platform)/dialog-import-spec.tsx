@@ -41,6 +41,7 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
     setWorkspace,
     url,
     workspace,
+    workspaceOptions,
   } = useImportSpec({ onOpenChange });
 
   const open = controlledOpen ?? internalOpen;
@@ -129,13 +130,28 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             </span>
           </div>
 
-          <Select value={workspace} onValueChange={(value) => setWorkspace(value ?? 'current')}>
+          <Select
+            value={workspace}
+            onValueChange={(value) =>
+              setWorkspace(
+                value ??
+                  workspaceOptions.find((workspaceOption) => workspaceOption.isActive)?.id ??
+                  workspaceOptions[0]?.id ??
+                  ''
+              )
+            }
+          >
             <SelectTrigger id="workspace-target" className="w-full">
               <SelectValue />
             </SelectTrigger>
 
             <SelectContent>
-              <SelectItem value="current">Current workspace</SelectItem>
+              {workspaceOptions.map((workspaceOption) => (
+                <SelectItem key={workspaceOption.id} value={workspaceOption.id}>
+                  {workspaceOption.name}
+                  {workspaceOption.isActive ? ' (active)' : ''}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
 
