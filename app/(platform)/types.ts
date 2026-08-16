@@ -106,6 +106,7 @@ export type WorkspaceState = {
   activeWorkspaceId: string;
   createWorkspace: (name: string) => string | null;
   renameWorkspace: (id: string, name: string) => boolean;
+  deleteWorkspace: (id: string) => boolean;
   selectWorkspace: (id: string) => void;
   setWorkspaceSpec: (id: string, spec: string) => void;
   addManualEndpoint: (id: string, endpoint: ApiEndpointDetail) => void;

@@ -21,6 +21,23 @@ const defaultWorkspace = {
 
 const normalizeName = (name: string): string => name.trim();
 
+export const removeWorkspace = (
+  workspaces: WorkspaceState['workspaces'],
+  activeWorkspaceId: string,
+  workspaceId: string
+) => {
+  if (workspaces.length <= 1 || !workspaces.some((workspace) => workspace.id === workspaceId)) {
+    return { workspaces, activeWorkspaceId, deleted: false };
+  }
+
+  const remainingWorkspaces = workspaces.filter((workspace) => workspace.id !== workspaceId);
+  return {
+    workspaces: remainingWorkspaces,
+    activeWorkspaceId: activeWorkspaceId === workspaceId ? remainingWorkspaces[0].id : activeWorkspaceId,
+    deleted: true,
+  };
+};
+
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set) => ({
@@ -57,6 +74,17 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           }),
         }));
         return renamed;
+      },
+      deleteWorkspace: (id) => {
+        let deleted = false;
+        set((state) => {
+          const nextState = removeWorkspace(state.workspaces, state.activeWorkspaceId, id);
+          deleted = nextState.deleted;
+          return nextState.deleted
+            ? { workspaces: nextState.workspaces, activeWorkspaceId: nextState.activeWorkspaceId }
+            : state;
+        });
+        return deleted;
       },
       selectWorkspace: (id) =>
         set((state) =>
