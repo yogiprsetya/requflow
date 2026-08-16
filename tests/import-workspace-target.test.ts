@@ -4,7 +4,7 @@ import {
   CREATE_NEW_WORKSPACE_OPTION_ID,
   getImportWorkspaceOptions,
   resolveImportWorkspaceId,
-} from '../app/(platform)/import-workspace-target.js';
+} from '../app/(platform)/utils/import-workspace-target.js';
 
 const workspaces = [
   { id: 'workspace:personal', name: 'Personal Workspace' },

@@ -1,6 +1,7 @@
 'use client';
 
-import { Boxes, Check, Container } from 'lucide-react';
+import { useState } from 'react';
+import { Boxes, Check, Container, Plus } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
@@ -12,8 +13,15 @@ import {
 } from '~/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { useWorkspaceStore } from './workspace-store';
+import dynamic from 'next/dynamic';
+
+const DialogAddWorkspace = dynamic(() => import('./dialog-add-workspace').then((m) => m.DialogAddWorkspace), {
+  ssr: false,
+});
 
 export const Sidedock = () => {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const selectEnvironment = useWorkspaceStore((state) => state.selectEnvironment);
@@ -28,6 +36,23 @@ export const Sidedock = () => {
       className="bg-sidebar border-secondary z-20 hidden h-full w-12 flex-col items-center border-r py-3 md:flex"
     >
       <div className="flex flex-col items-center space-y-2">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                type="button"
+                size="icon-lg"
+                variant="ghost"
+                aria-label="Create New Workspace"
+                onClick={() => setIsCreateOpen(true)}
+              >
+                <Plus />
+              </Button>
+            }
+          />
+          <TooltipContent side="right">Create New Workspace</TooltipContent>
+        </Tooltip>
+
         <Tooltip>
           <TooltipTrigger
             render={
@@ -77,6 +102,8 @@ export const Sidedock = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <DialogAddWorkspace open={isCreateOpen} onOpenChange={setIsCreateOpen} />
     </nav>
   );
 };

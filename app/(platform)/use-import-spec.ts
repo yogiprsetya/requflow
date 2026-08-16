@@ -6,7 +6,7 @@ import {
   isSupportedSpecFile,
   validateImportedSpec,
 } from './utils/openapi-import';
-import { getImportWorkspaceOptions, resolveImportWorkspaceId } from './import-workspace-target';
+import { getImportWorkspaceOptions, resolveImportWorkspaceId } from './utils/import-workspace-target';
 import { useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';

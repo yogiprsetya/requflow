@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { useImportSpec } from './use-import-spec';
-import { CREATE_NEW_WORKSPACE_OPTION_ID } from './import-workspace-target';
+import { CREATE_NEW_WORKSPACE_OPTION_ID } from './utils/import-workspace-target';
 import { ReactNode } from 'react';
 
 type ImportSpecDialogProps = {

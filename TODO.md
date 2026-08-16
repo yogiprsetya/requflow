@@ -59,17 +59,17 @@ Prioritas:
   - Acceptance: data yang diisi di `Add endpoint manually` identik dengan data yang tampil di builder.
   - Referensi: `app/(platform)/dialog-add-manual-endpoint.tsx`, `app/(platform)/playground/request-builder.tsx`, `app/(platform)/types.ts`.
 
-- [ ] **Source type badge untuk semua endpoint**
+- [x] **Source type badge untuk semua endpoint**
   - Tampilkan badge/icon `spec` dan `manual` secara konsisten.
   - Acceptance: user dapat membedakan asal endpoint langsung dari daftar Sidebar.
   - Referensi: `SPEC.md` §4, `app/(platform)/sidebars.tsx`.
 
-- [ ] **Import URL flow**
+- [x] **Import URL flow**
   - Tambahkan action `Fetch` pada tab URL atau dokumentasikan bahwa `Import` memang menjadi action fetch+validate.
   - Tetap tampilkan inline error dan mempertahankan dialog ketika fetch/parse gagal.
   - Referensi: `SPEC.md` §2.1, `app/(platform)/dialog-import-spec.tsx`.
 
-- [ ] **Layout saat Sidebar collapsed**
+- [x] **Layout saat Sidebar collapsed**
   - Pastikan Main benar-benar mengisi ruang yang dibebaskan ketika Sidebar collapsed.
   - Verifikasi container layout tidak mempertahankan lebar kosong tetap.
   - Acceptance: lebar Main bertambah dan tidak ada blank space sidebar pada desktop.
@@ -77,7 +77,7 @@ Prioritas:
 
 ## P2 — Penyelarasan Navbar dan Dock
 
-- [ ] **Sesuaikan struktur Navbar dengan SPEC**
+- [x] **Sesuaikan struktur Navbar dengan SPEC**
   - Jadikan Import Spec CTA utama yang selalu terlihat.
   - Atur urutan aksi menjadi Avatar, Notification, lalu Import Spec dari kiri ke kanan sesuai SPEC.
   - Ganti/selaraskan wordmark `Requflow` dengan identitas produk yang ditetapkan (`SpecLess`, jika itu nama final).
@@ -89,7 +89,7 @@ Prioritas:
   - Acceptance: avatar dapat diklik dan membuka dropdown.
   - Referensi: `SPEC.md` §2, `app/(platform)/navbar.tsx`.
 
-- [ ] **Selaraskan tanggung jawab Dock**
+- [x] **Selaraskan tanggung jawab Dock**
   - Tambahkan toggle Sidebar pada Dock atau putuskan secara eksplisit bahwa Navbar menjadi pengecualian desain.
   - Tambahkan create workspace pada Dock bila struktur SPEC dipertahankan.
   - Ganti tombol `Collection` yang saat ini belum memiliki aksi atau hapus jika tidak diperlukan.
