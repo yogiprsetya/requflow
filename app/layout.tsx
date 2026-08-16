@@ -27,7 +27,7 @@ const RootLayout = ({
       className={cn(fontSans.variable, 'h-svh overflow-hidden antialiased')}
     >
       <body className="flex h-svh max-h-svh flex-col overflow-hidden">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
       </body>

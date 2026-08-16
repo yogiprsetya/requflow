@@ -24,20 +24,18 @@ import { cn } from '~/lib/css';
 import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
 import { usePlaygroundStore } from './playground/playground-store';
-import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
-import type { ApiEndpoint, ApiEndpointDetail } from './types';
+import type { ApiEndpoint } from './types';
 import { methodBadgeClass } from './utils/helpers';
 
 export const PlatformSidebar = () => {
   const { open } = useSidebar();
   const apiGroups = useLocalSpec();
-  const manualEndpoints = useWorkspaceStore((state) => getActiveWorkspace(state).manualEndpoints);
   const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
 
-  const groups = filterGroups([...apiGroups, ...groupManualEndpoints(manualEndpoints)], searchQuery);
+  const groups = filterGroups(apiGroups, searchQuery);
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="md:top-14 md:left-12!">
@@ -101,12 +99,6 @@ export const PlatformSidebar = () => {
                               {endpoint.method}
                             </Badge>
 
-                            {endpoint.sourceType === 'manual' && (
-                              <Badge variant="outline" className="text-[0.55rem]">
-                                manual
-                              </Badge>
-                            )}
-
                             <span title={endpoint.summary}>{endpoint.path}</span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -132,13 +124,8 @@ export const PlatformSidebar = () => {
   );
 };
 
-type SidebarEndpoint = Pick<ApiEndpoint, 'method' | 'path' | 'summary' | 'sourceType'>;
+type SidebarEndpoint = Pick<ApiEndpoint, 'method' | 'path' | 'summary'>;
 type SidebarGroup = { tag: string; endpoints: SidebarEndpoint[] };
-
-const groupManualEndpoints = (endpoints: ApiEndpointDetail[]): SidebarGroup[] => {
-  const manual = endpoints.filter((endpoint) => endpoint.sourceType === 'manual');
-  return manual.length ? [{ tag: 'Manual', endpoints: manual }] : [];
-};
 
 const filterGroups = (groups: SidebarGroup[], query: string): SidebarGroup[] => {
   const normalizedQuery = query.trim().toLowerCase();

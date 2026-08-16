@@ -13,13 +13,9 @@ export const useLocalSpec = (): ApiGroup[] => {
     const loadGroups = () => {
       const workspace = getActiveWorkspace({ activeWorkspaceId, workspaces });
       const storedSpec = workspace?.spec ?? null;
+      const specEndpoints = storedSpec ? parseStoredSpec(storedSpec) : [];
 
-      if (!storedSpec) {
-        setApiGroups([]);
-        return;
-      }
-
-      setApiGroups(groupEndpoints(parseStoredSpec(storedSpec)));
+      setApiGroups(groupEndpoints([...specEndpoints, ...(workspace?.manualEndpoints ?? [])]));
     };
 
     loadGroups();
