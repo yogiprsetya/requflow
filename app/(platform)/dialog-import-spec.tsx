@@ -1,6 +1,6 @@
 'use client';
 
-import { FileUp, FolderInput, Link2 } from 'lucide-react';
+import { FileUp, FolderInput, Link2, Plus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Label } from '~/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { useImportSpec } from './use-import-spec';
+import { CREATE_NEW_WORKSPACE_OPTION_ID } from './import-workspace-target';
 import { ReactNode } from 'react';
 
 type ImportSpecDialogProps = {
@@ -25,20 +26,23 @@ type ImportSpecDialogProps = {
 
 export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }: ImportSpecDialogProps) => {
   const {
+    canImport,
     error,
     file,
     handleFileChange,
     handleImport,
     handleMethodChange,
+    handleNewWorkspaceNameChange,
     handleOpen,
     handleOpenChange,
     handleCancel,
     handleUrlChange,
-    hasSource,
+    handleWorkspaceChange,
+    isCreatingNewWorkspace,
     isImporting,
     method,
+    newWorkspaceName,
     open: internalOpen,
-    setWorkspace,
     url,
     workspace,
     workspaceOptions,
@@ -65,7 +69,6 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
 
             <div className="flex flex-col">
               <DialogTitle>Import OpenAPI spec</DialogTitle>
-
               <DialogDescription>Add endpoints from an OpenAPI JSON or YAML document.</DialogDescription>
             </div>
           </div>
@@ -84,7 +87,7 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="file" className="bg-muted/20 mt-3 rounded-lg border p-4">
+          <TabsContent value="file" className="bg-muted dark:border-input mt-3 rounded-lg border p-4">
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="openapi-file">OpenAPI file</Label>
@@ -130,17 +133,7 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             </span>
           </div>
 
-          <Select
-            value={workspace}
-            onValueChange={(value) =>
-              setWorkspace(
-                value ??
-                  workspaceOptions.find((workspaceOption) => workspaceOption.isActive)?.id ??
-                  workspaceOptions[0]?.id ??
-                  ''
-              )
-            }
-          >
+          <Select value={workspace} onValueChange={handleWorkspaceChange}>
             <SelectTrigger id="workspace-target" className="w-full">
               <span className="flex flex-1 text-left">
                 {workspaceOptions.find((workspaceOption) => workspaceOption.id === workspace)?.name}
@@ -150,12 +143,35 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             <SelectContent>
               {workspaceOptions.map((workspaceOption) => (
                 <SelectItem key={workspaceOption.id} value={workspaceOption.id}>
-                  {workspaceOption.name}
-                  {workspaceOption.isActive ? ' (active)' : ''}
+                  {workspaceOption.id === CREATE_NEW_WORKSPACE_OPTION_ID ? (
+                    <span className="flex items-center gap-2">
+                      <Plus data-icon="inline-start" className="size-4" />
+                      {workspaceOption.name}
+                    </span>
+                  ) : (
+                    <>
+                      {workspaceOption.name}
+                      {workspaceOption.isActive ? ' (active)' : ''}
+                    </>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          {isCreatingNewWorkspace && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="new-workspace-name">New workspace name</Label>
+
+              <Input
+                id="new-workspace-name"
+                value={newWorkspaceName}
+                onChange={(event) => handleNewWorkspaceNameChange(event.target.value)}
+                placeholder="My API workspace"
+                maxLength={50}
+              />
+            </div>
+          )}
 
           {error && (
             <p className="bg-destructive/10 text-destructive rounded-md px-3 py-2 text-xs" role="alert">
@@ -169,7 +185,7 @@ export const ImportSpecDialog = ({ open: controlledOpen, onOpenChange, trigger }
             Cancel
           </Button>
 
-          <Button size="lg" disabled={!hasSource || isImporting} onClick={handleImport}>
+          <Button size="lg" disabled={!canImport || isImporting} onClick={handleImport}>
             {isImporting ? 'Validating…' : 'Import'}
           </Button>
         </DialogFooter>

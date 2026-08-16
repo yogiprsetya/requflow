@@ -11,6 +11,8 @@ import { useWorkspaceStore } from './workspace-store';
 
 export type ImportMethod = 'file' | 'url';
 
+export const CREATE_NEW_WORKSPACE_VALUE = '__create_new_workspace__';
+
 type UseImportSpecOptions = {
   onOpenChange?: (open: boolean) => void;
 };
@@ -19,23 +21,28 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
   const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   const workspaces = useWorkspaceStore((state) => state.workspaces);
   const setWorkspaceSpec = useWorkspaceStore((state) => state.setWorkspaceSpec);
+  const createWorkspace = useWorkspaceStore((state) => state.createWorkspace);
 
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<ImportMethod>('file');
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState('');
   const [workspace, setWorkspace] = useState<string | null>(null);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [error, setError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
   const hasSource = method === 'file' ? file !== null : url.trim().length > 0;
   const workspaceOptions = getImportWorkspaceOptions(workspaces, activeWorkspaceId);
+  const isCreatingNewWorkspace = workspace === CREATE_NEW_WORKSPACE_VALUE;
+  const canImport = hasSource && (!isCreatingNewWorkspace || newWorkspaceName.trim().length > 0);
 
   const reset = () => {
     setMethod('file');
     setFile(null);
     setUrl('');
     setWorkspace(null);
+    setNewWorkspaceName('');
     setError('');
     setIsImporting(false);
   };
@@ -78,8 +85,20 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
     setError('');
   };
 
+  const handleWorkspaceChange = (value: string | null) => {
+    if (!value) return;
+    setWorkspace(value === activeWorkspaceId ? null : value);
+    setNewWorkspaceName('');
+    setError('');
+  };
+
+  const handleNewWorkspaceNameChange = (value: string) => {
+    setNewWorkspaceName(value);
+    setError('');
+  };
+
   const handleImport = async () => {
-    if (!hasSource) return;
+    if (!canImport) return;
 
     setError('');
     setIsImporting(true);
@@ -94,11 +113,20 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
       }
       const serializedSpec = validateImportedSpec(source);
 
-      const targetWorkspaceId = resolveImportWorkspaceId(
-        workspace ?? activeWorkspaceId,
-        workspaces,
-        activeWorkspaceId
-      );
+      let targetWorkspaceId: string | null = null;
+      if (isCreatingNewWorkspace) {
+        targetWorkspaceId = createWorkspace(newWorkspaceName.trim());
+        if (!targetWorkspaceId) throw new Error('Unable to create workspace.');
+      } else {
+        targetWorkspaceId = resolveImportWorkspaceId(
+          workspace ?? activeWorkspaceId,
+          workspaces,
+          activeWorkspaceId
+        );
+      }
+
+      if (!targetWorkspaceId) throw new Error('Select a workspace target.');
+
       setWorkspaceSpec(targetWorkspaceId, serializedSpec);
       window.dispatchEvent(new Event(IMPORTED_SPEC_UPDATED_EVENT));
       setOpen(false);
@@ -112,18 +140,23 @@ export const useImportSpec = ({ onOpenChange }: UseImportSpecOptions = {}) => {
   };
 
   return {
+    canImport,
     error,
     file,
     handleFileChange,
     handleImport,
     handleMethodChange,
+    handleNewWorkspaceNameChange,
     handleOpen,
     handleOpenChange,
     handleCancel,
     handleUrlChange,
+    handleWorkspaceChange,
     hasSource,
+    isCreatingNewWorkspace,
     isImporting,
     method,
+    newWorkspaceName,
     open,
     setWorkspace,
     url,
