@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Folder, Pencil, Sparkles } from 'lucide-react';
+import { FileText, Folder, FolderPen, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '~/components/ui/empty';
@@ -200,7 +200,7 @@ const FolderItem = ({
 
       <ContextMenuContent>
         <ContextMenuItem onClick={onRename}>
-          <Pencil /> Rename folder
+          <FolderPen /> Rename folder
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

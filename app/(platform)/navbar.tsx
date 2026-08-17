@@ -6,7 +6,18 @@ import { Button } from '~/components/ui/button';
 import { ImportSpecDialog } from '~/app/(platform)/dialog-import-spec';
 import { SidebarTrigger } from '../../components/ui/sidebar';
 import { WorkspaceSwitcher } from './workspace-switcher';
-import { Check, FileUp, FolderInput, Moon, Plus, Sun } from 'lucide-react';
+import { getActiveWorkspace, useWorkspaceStore } from './workspace-store';
+import {
+  Check,
+  FileBraces,
+  FileDown,
+  FileUp,
+  FolderInput,
+  Moon,
+  Plus,
+  SquareChartGantt,
+  Sun,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import {
   DropdownMenu,
@@ -15,10 +26,14 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { cn } from '~/lib/css';
+import { downloadExport } from './utils/export-workspace';
 
 export const PlatformNavbar = () => {
   const [isImportSpecOpen, setIsImportSpecOpen] = useState(false);
   const { setTheme, theme } = useTheme();
+  const activeWorkspace = useWorkspaceStore((state) =>
+    getActiveWorkspace({ activeWorkspaceId: state.activeWorkspaceId, workspaces: state.workspaces })
+  );
 
   return (
     <header className="bg-background/95 supports-backdrop-filter:bg-background/80 sticky top-0 z-30 flex h-14 min-h-14 w-full items-center justify-between border-b pr-4 pl-1 backdrop-blur">
@@ -36,7 +51,7 @@ export const PlatformNavbar = () => {
       <div className="flex items-center gap-4">
         <ImportSpecDialog open={isImportSpecOpen} onOpenChange={setIsImportSpecOpen} trigger={() => null} />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <WorkspaceSwitcher />
 
           <DropdownMenu>
@@ -51,6 +66,22 @@ export const PlatformNavbar = () => {
 
               <DropdownMenuItem disabled>
                 <Plus /> Create spec
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" />}>
+              <FileDown /> Export
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => downloadExport(activeWorkspace, 'json')}>
+                <FileBraces /> as JSON
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onClick={() => downloadExport(activeWorkspace, 'yaml')}>
+                <SquareChartGantt /> as YAML
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
