@@ -33,12 +33,6 @@ Prioritas:
 
 ## P1 — Fitur MVP yang belum lengkap
 
-- [ ] **Add Endpoint action di Sidebar**
-  - Tambahkan tombol `+ Add Endpoint` pada Sidebar.
-  - Sediakan pilihan `Import Spec` atau `Add Manually`.
-  - Acceptance: kedua entry point tersedia dari Sidebar tanpa harus berpindah ke Main atau Navbar.
-  - Referensi: `SPEC.md` §4, `app/(platform)/sidebars.tsx`.
-
 - [x] **Workspace target selector untuk import**
   - Isi selector dengan semua workspace yang tersedia.
   - Default ke active workspace.
@@ -88,12 +82,6 @@ Prioritas:
   - Tambahkan menu profile, workspace settings, dan logout placeholder untuk MVP tanpa auth.
   - Acceptance: avatar dapat diklik dan membuka dropdown.
   - Referensi: `SPEC.md` §2, `app/(platform)/navbar.tsx`.
-
-- [x] **Selaraskan tanggung jawab Dock**
-  - Tambahkan toggle Sidebar pada Dock atau putuskan secara eksplisit bahwa Navbar menjadi pengecualian desain.
-  - Tambahkan create workspace pada Dock bila struktur SPEC dipertahankan.
-  - Ganti tombol `Collection` yang saat ini belum memiliki aksi atau hapus jika tidak diperlukan.
-  - Referensi: `SPEC.md` §3, `app/(platform)/sidedock.tsx`.
 
 ## Fase berikutnya — jangan dianggap blocker MVP
 
