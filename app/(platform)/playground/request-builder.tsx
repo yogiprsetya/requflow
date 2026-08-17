@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/css';
 import { JsonEditor } from '~/components/common/json-editor';
-import { ApiEndpointDetail, PlaygroundRequest, RequestParameter, SchemaObject } from '../types';
+import { ApiEndpointDetail, PlaygroundRequest, RequestParameter } from '../types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +18,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { jsonValidationError, methodTextClass } from '../utils/helpers';
+import {
+  COPY_FEEDBACK_MS,
+  DEFAULT_BODY_MEDIA_TYPE,
+  type RequestHeader,
+  buildRequestHeaders,
+  buildRequestUrl,
+  createBodyValue,
+  groupParametersByLocation,
+  jsonValidationError,
+  methodTextClass,
+  placeholderFor,
+} from '../utils/helpers';
 
-type KeyValue = { id: number; key: string; value: string; enabled: boolean };
+type Header = RequestHeader & { id: number };
 
 export const RequestBuilder = ({
   endpoint,
@@ -29,13 +40,15 @@ export const RequestBuilder = ({
   endpoint: ApiEndpointDetail;
   onSend: (request: PlaygroundRequest) => void;
 }) => {
-  const queryParams = endpoint.parameters.filter((parameter) => parameter.in === 'query');
-  const pathParams = endpoint.parameters.filter((parameter) => parameter.in === 'path');
-  const headerParams = endpoint.parameters.filter((parameter) => parameter.in === 'header');
-  const cookieParams = endpoint.parameters.filter((parameter) => parameter.in === 'cookie');
+  const {
+    query: queryParams,
+    path: pathParams,
+    header: headerParams,
+    cookie: cookieParams,
+  } = groupParametersByLocation(endpoint.parameters);
   const bodyMediaType = endpoint.requestBody?.content
-    ? (Object.keys(endpoint.requestBody.content)[0] ?? 'application/json')
-    : 'application/json';
+    ? (Object.keys(endpoint.requestBody.content)[0] ?? DEFAULT_BODY_MEDIA_TYPE)
+    : DEFAULT_BODY_MEDIA_TYPE;
 
   const [pathUrl, setPathUrl] = useState(`${endpoint.baseUrl ?? ''}${endpoint.path}`);
 
@@ -47,7 +60,7 @@ export const RequestBuilder = ({
       ])
     )
   );
-  const [headers, setHeaders] = useState<KeyValue[]>(() =>
+  const [headers, setHeaders] = useState<Header[]>(() =>
     headerParams.map((parameter, index) => ({
       id: index,
       key: parameter.name,
@@ -57,7 +70,6 @@ export const RequestBuilder = ({
   );
   const [body, setBody] = useState(() => createBodyValue(endpoint.requestBody?.content?.[bodyMediaType]?.schema));
   const bodyError = endpoint.requestBody ? jsonValidationError(body) : undefined;
-  const [copied, setCopied] = useState(false);
 
   const updateValue = (name: string, value: string) => {
     setValues((current) => ({ ...current, [name]: value }));
@@ -73,36 +85,15 @@ export const RequestBuilder = ({
 
   const removeHeader = (id: number) => setHeaders((current) => current.filter((header) => header.id !== id));
 
-  const copyUrl = async (copyUrl: string) => {
-    await navigator.clipboard?.writeText(copyUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
-  };
-
   const sendRequest = () => {
     if (bodyError) return;
 
-    const url = new URL(pathUrl, window.location.origin);
-
-    endpoint.parameters.forEach((parameter) => {
-      const value = values[parameter.name];
-      if (!value) return;
-
-      if (parameter.in === 'path') {
-        url.pathname = url.pathname.replace(`{${parameter.name}}`, encodeURIComponent(value));
-      } else if (parameter.in === 'query') {
-        url.searchParams.set(parameter.name, value);
-      }
-    });
-
-    const requestHeaders = Object.fromEntries(
-      headers.filter((header) => header.enabled && header.key.trim()).map((header) => [header.key, header.value])
-    );
+    const url = buildRequestUrl(pathUrl, endpoint.parameters, values, window.location.origin);
 
     onSend({
-      url: url.toString(),
+      url,
       method: endpoint.method,
-      headers: requestHeaders,
+      headers: buildRequestHeaders(headers),
       body: endpoint.requestBody ? body : undefined,
     });
   };
@@ -140,30 +131,7 @@ export const RequestBuilder = ({
           aria-label="Base URL"
         />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button size="icon-lg" variant="ghost">
-                {copied ? <Check /> : <Copy />}
-              </Button>
-            }
-          />
-
-          <DropdownMenuContent>
-            <DropdownMenuGroup>
-              <DropdownMenuItem aria-label="Copy request endpoint" onClick={() => copyUrl(endpoint.path)}>
-                Copy path
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                aria-label="Copy request full URL"
-                onClick={() => copyUrl(endpoint.baseUrl + endpoint.path)}
-              >
-                Copy URL
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <CopyUrlButton path={endpoint.path} fullUrl={endpoint.baseUrl + endpoint.path} />
 
         <Button className="h-9 px-4" onClick={sendRequest}>
           <Play data-icon="inline-start" />
@@ -222,89 +190,17 @@ export const RequestBuilder = ({
           </TabsContent>
 
           <TabsContent value="headers" className="space-y-3 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Request headers</h3>
-                <p className="text-muted-foreground text-xs">Headers are sent with the request when enabled.</p>
-              </div>
-
-              <Button size="sm" variant="outline" onClick={addHeader}>
-                <Plus data-icon="inline-start" />
-                Add header
-              </Button>
-            </div>
-
-            <div className="overflow-hidden rounded-lg border">
-              <div className="bg-muted text-muted-foreground grid grid-cols-[28px_1fr_1fr_36px] gap-2 px-3 py-2 text-[11px] font-medium tracking-wider uppercase">
-                <span />
-                <span>Key</span>
-                <span>Value</span>
-                <span />
-              </div>
-
-              {headers.map((header) => (
-                <div
-                  key={header.id}
-                  className="grid grid-cols-[28px_1fr_1fr_36px] items-center gap-2 border-t px-3 py-2"
-                >
-                  <input
-                    type="checkbox"
-                    checked={header.enabled}
-                    onChange={(event) => updateHeader(header.id, 'enabled', event.target.checked)}
-                    aria-label={`Enable ${header.key || 'header'}`}
-                  />
-
-                  <Input
-                    value={header.key}
-                    onChange={(event) => updateHeader(header.id, 'key', event.target.value)}
-                    placeholder="Header name"
-                  />
-
-                  <Input
-                    value={header.value}
-                    onChange={(event) => updateHeader(header.id, 'value', event.target.value)}
-                    placeholder="Value"
-                  />
-
-                  <Button
-                    size="icon-sm"
-                    variant="ghost"
-                    onClick={() => removeHeader(header.id)}
-                    aria-label={`Remove ${header.key || 'header'}`}
-                  >
-                    <Trash2 />
-                  </Button>
-                </div>
-              ))}
-            </div>
+            <HeaderSection headers={headers} onAdd={addHeader} onUpdate={updateHeader} onRemove={removeHeader} />
           </TabsContent>
 
           <TabsContent value="body" className="space-y-3 p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-medium">Request body</h3>
-                <p className="text-muted-foreground text-xs">Generated from the OpenAPI request body schema.</p>
-              </div>
-
-              <Select value={bodyMediaType} onValueChange={() => undefined}>
-                <SelectTrigger className="w-44">
-                  <SelectValue />
-                </SelectTrigger>
-
-                <SelectContent>
-                  <SelectItem value={bodyMediaType}>{bodyMediaType}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {endpoint.requestBody ? (
-              <div className="space-y-2">
-                <JsonEditor value={body} onChange={setBody} hasError={Boolean(bodyError)} />
-                {bodyError && <p className="text-destructive text-xs">{bodyError}</p>}
-              </div>
-            ) : (
-              <EmptySection icon={<KeyRound />} text="This endpoint does not define a request body." />
-            )}
+            <BodySection
+              body={body}
+              bodyError={bodyError}
+              bodyMediaType={bodyMediaType}
+              hasBody={Boolean(endpoint.requestBody)}
+              onBodyChange={setBody}
+            />
           </TabsContent>
 
           <TabsContent value="auth" className="p-5">
@@ -399,39 +295,145 @@ const EmptySection = ({ icon, text }: { icon: ReactNode; text: string }) => (
   </div>
 );
 
-const placeholderFor = (schema?: SchemaObject): string => {
-  if (!schema) return 'Enter value';
-  if (schema.example !== undefined) return String(schema.example);
-  if (schema.default !== undefined) return String(schema.default);
-  return schema.type === 'integer' || schema.type === 'number'
-    ? '0'
-    : schema.type === 'boolean'
-      ? 'true'
-      : 'Enter value';
-};
+const HeaderSection = ({
+  headers,
+  onAdd,
+  onUpdate,
+  onRemove,
+}: {
+  headers: Header[];
+  onAdd: () => void;
+  onUpdate: (id: number, field: 'key' | 'value' | 'enabled', value: string | boolean) => void;
+  onRemove: (id: number) => void;
+}) => (
+  <>
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-sm font-medium">Request headers</h3>
+        <p className="text-muted-foreground text-xs">Headers are sent with the request when enabled.</p>
+      </div>
 
-const createBodyValue = (schema?: SchemaObject): string => {
-  if (!schema) return '{}';
+      <Button size="sm" variant="outline" onClick={onAdd}>
+        <Plus data-icon="inline-start" />
+        Add header
+      </Button>
+    </div>
 
-  const value = Object.fromEntries(
-    Object.entries(schema.properties ?? {})
-      .filter(([, property]) => !property.readOnly)
-      .map(([key, property]) => [key, property.example ?? property.default ?? sampleValue(property)])
+    <div className="overflow-hidden rounded-lg border">
+      <div className="bg-muted text-muted-foreground grid grid-cols-[28px_1fr_1fr_36px] gap-2 px-3 py-2 text-[11px] font-medium tracking-wider uppercase">
+        <span />
+        <span>Key</span>
+        <span>Value</span>
+        <span />
+      </div>
+
+      {headers.map((header) => (
+        <div key={header.id} className="grid grid-cols-[28px_1fr_1fr_36px] items-center gap-2 border-t px-3 py-2">
+          <input
+            type="checkbox"
+            checked={header.enabled}
+            onChange={(event) => onUpdate(header.id, 'enabled', event.target.checked)}
+            aria-label={`Enable ${header.key || 'header'}`}
+          />
+
+          <Input
+            value={header.key}
+            onChange={(event) => onUpdate(header.id, 'key', event.target.value)}
+            placeholder="Header name"
+          />
+
+          <Input
+            value={header.value}
+            onChange={(event) => onUpdate(header.id, 'value', event.target.value)}
+            placeholder="Value"
+          />
+
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => onRemove(header.id)}
+            aria-label={`Remove ${header.key || 'header'}`}
+          >
+            <Trash2 />
+          </Button>
+        </div>
+      ))}
+    </div>
+  </>
+);
+
+const CopyUrlButton = ({ path, fullUrl }: { path: string; fullUrl: string }) => {
+  const [copied, setCopied] = useState(false);
+
+  const copyUrl = async (copyUrl: string) => {
+    await navigator.clipboard?.writeText(copyUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button size="icon-lg" variant="ghost">
+            {copied ? <Check /> : <Copy />}
+          </Button>
+        }
+      />
+
+      <DropdownMenuContent>
+        <DropdownMenuGroup>
+          <DropdownMenuItem aria-label="Copy request endpoint" onClick={() => copyUrl(path)}>
+            Copy path
+          </DropdownMenuItem>
+
+          <DropdownMenuItem aria-label="Copy request full URL" onClick={() => copyUrl(fullUrl)}>
+            Copy URL
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
-
-  return JSON.stringify(schema.type === 'array' ? [sampleValue(schema.items)] : value, null, 2);
 };
 
-const sampleValue = (schema?: SchemaObject): unknown => {
-  if (!schema) return '';
-  if (schema.enum?.length) return schema.enum[0];
-  if (schema.type === 'integer' || schema.type === 'number') return 0;
-  if (schema.type === 'boolean') return false;
-  if (schema.type === 'array') return [sampleValue(schema.items)];
-  if (schema.type === 'object')
-    return Object.fromEntries(
-      Object.entries(schema.properties ?? {}).map(([key, property]) => [key, sampleValue(property)])
-    );
+const BodySection = ({
+  body,
+  bodyError,
+  bodyMediaType,
+  hasBody,
+  onBodyChange,
+}: {
+  body: string;
+  bodyError: string | undefined;
+  bodyMediaType: string;
+  hasBody: boolean;
+  onBodyChange: (value: string) => void;
+}) => (
+  <>
+    <div className="flex items-center justify-between">
+      <div>
+        <h3 className="text-sm font-medium">Request body</h3>
+        <p className="text-muted-foreground text-xs">Generated from the OpenAPI request body schema.</p>
+      </div>
 
-  return '';
-};
+      <Select value={bodyMediaType} onValueChange={() => undefined}>
+        <SelectTrigger className="w-44">
+          <SelectValue />
+        </SelectTrigger>
+
+        <SelectContent>
+          <SelectItem value={bodyMediaType}>{bodyMediaType}</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+
+    {hasBody ? (
+      <div className="space-y-2">
+        <JsonEditor value={body} onChange={onBodyChange} hasError={Boolean(bodyError)} />
+        {bodyError && <p className="text-destructive text-xs">{bodyError}</p>}
+      </div>
+    ) : (
+      <EmptySection icon={<KeyRound />} text="This endpoint does not define a request body." />
+    )}
+  </>
+);
