@@ -10,6 +10,7 @@ import {
 
 export type ApiGroup = {
   tag: string;
+  label: string;
   endpoints: ApiEndpoint[];
 };
 
@@ -35,7 +36,10 @@ export const parseStoredSpec = (storedSpec: string | null): ApiEndpointDetail[] 
   }
 };
 
-export const groupEndpoints = (endpoints: ApiEndpointDetail[]): ApiGroup[] => {
+export const groupEndpoints = (
+  endpoints: ApiEndpointDetail[],
+  folderNames: Record<string, string> = {}
+): ApiGroup[] => {
   const groups = new Map<string, ApiEndpoint[]>();
 
   for (const endpoint of endpoints) {
@@ -52,7 +56,7 @@ export const groupEndpoints = (endpoints: ApiEndpointDetail[]): ApiGroup[] => {
 
   return [...groups.entries()]
     .sort(([first], [second]) => first.localeCompare(second))
-    .map(([tag, groupEndpoints]) => ({ tag, endpoints: groupEndpoints }));
+    .map(([tag, groupEndpoints]) => ({ tag, label: folderNames[tag] ?? tag, endpoints: groupEndpoints }));
 };
 
 const parseEndpoints = (

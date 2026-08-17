@@ -17,6 +17,7 @@ const defaultWorkspace = {
   manualEndpoints: [],
   environments: defaultEnvironments,
   activeEnvironmentId: defaultEnvironments[0].id,
+  folderNames: {},
 };
 
 const normalizeName = (name: string): string => name.trim();
@@ -98,6 +99,22 @@ export const useWorkspaceStore = create<WorkspaceState>()(
               : workspace
           ),
         })),
+      renameFolder: (workspaceId, tag, name) => {
+        const normalizedName = normalizeName(name);
+        if (!normalizedName || !tag) return false;
+
+        let renamed = false;
+        const nextWorkspaces = get().workspaces.map((workspace) => {
+          if (workspace.id !== workspaceId) return workspace;
+          renamed = true;
+          return {
+            ...workspace,
+            folderNames: { ...workspace.folderNames, [tag]: normalizedName },
+          };
+        });
+        if (renamed) set({ workspaces: nextWorkspaces });
+        return renamed;
+      },
       selectEnvironment: (workspaceId, environmentId) =>
         set((state) => ({
           workspaces: state.workspaces.map((workspace) =>
@@ -120,6 +137,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             manualEndpoints: workspace.manualEndpoints ?? [],
             environments: workspace.environments ?? defaultEnvironments,
             activeEnvironmentId: workspace.activeEnvironmentId ?? defaultEnvironments[0].id,
+            folderNames: workspace.folderNames ?? {},
           })),
         };
       },

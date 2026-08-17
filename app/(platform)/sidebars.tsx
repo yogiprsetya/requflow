@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Folder, Sparkles } from 'lucide-react';
+import { FileText, Folder, Pencil, Sparkles } from 'lucide-react';
 import { SearchField } from '~/components/common/search-field';
 import { Badge } from '~/components/ui/badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '~/components/ui/empty';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '~/components/ui/context-menu';
 import {
   Sidebar,
   SidebarContent,
@@ -24,18 +30,25 @@ import { cn } from '~/lib/css';
 import { WorkspaceBreadcrumb } from './workspace-breadcrumb';
 import { Separator } from '~/components/ui/separator';
 import { usePlaygroundStore } from './playground/playground-store';
+import { useWorkspaceStore } from './workspace-store';
 import type { ApiEndpoint } from './types';
 import { methodBadgeClass } from './utils/helpers';
+import { DialogRenameFolder } from './dialog-rename-folder';
+import { getActiveWorkspace } from './workspace-store';
 
 export const PlatformSidebar = () => {
   const { open } = useSidebar();
   const apiGroups = useLocalSpec();
+  const activeWorkspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  const workspaces = useWorkspaceStore((state) => state.workspaces);
   const activeEndpointId = usePlaygroundStore((state) => state.activeEndpointId);
   const openEndpoint = usePlaygroundStore((state) => state.openEndpoint);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState('');
+  const [renameFolder, setRenameFolder] = useState<{ tag: string; label: string } | null>(null);
 
   const groups = filterGroups(apiGroups, searchQuery);
+  const activeWorkspace = getActiveWorkspace({ activeWorkspaceId, workspaces });
 
   return (
     <Sidebar collapsible="icon" variant="sidebar" className="md:top-14 md:left-12!">
@@ -63,51 +76,20 @@ export const PlatformSidebar = () => {
             </EmptyHeader>
           </Empty>
         ) : (
-          groups.map((group) => (
-            <Collapsible
-              key={group.tag}
-              open={
-                group.endpoints.some((endpoint) => activeEndpointId === `${endpoint.method}:${endpoint.path}`) ||
-                openGroups[group.tag] === true
+          groups.map((apiGroup) => (
+            <FolderItem
+              key={apiGroup.tag}
+              group={apiGroup}
+              isOpen={
+                apiGroup.endpoints.some(
+                  (endpoint) => activeEndpointId === `${endpoint.method}:${endpoint.path}`
+                ) || openGroups[apiGroup.tag] === true
               }
-              onOpenChange={(open) => setOpenGroups((groups) => ({ ...groups, [group.tag]: open }))}
-              className="group/collapsible"
-            >
-              <SidebarGroup className="py-0">
-                <CollapsibleTrigger className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors group-data-[collapsible=icon]:hidden">
-                  <Folder className="size-4" />
-
-                  <SidebarGroupLabel className="h-auto flex-1 p-0">{group.tag}</SidebarGroupLabel>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent className="ml-2">
-                  <SidebarGroupContent>
-                    <SidebarMenu>
-                      {group.endpoints.map((endpoint) => (
-                        <SidebarMenuItem key={`${endpoint.method}:${endpoint.path}`}>
-                          <SidebarMenuButton
-                            isActive={activeEndpointId === `${endpoint.method}:${endpoint.path}`}
-                            tooltip={`${endpoint.method.toUpperCase()} ${endpoint.path}`}
-                            onClick={() => openEndpoint(`${endpoint.method}:${endpoint.path}`)}
-                          >
-                            <Badge
-                              className={cn(
-                                'h-4.5 w-11 text-[0.6rem] font-semibold uppercase opacity-70',
-                                methodBadgeClass(endpoint.method)
-                              )}
-                            >
-                              {endpoint.method}
-                            </Badge>
-
-                            <span title={endpoint.summary}>{endpoint.path}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
+              onOpenChange={(open) => setOpenGroups((groups) => ({ ...groups, [apiGroup.tag]: open }))}
+              onSelectEndpoint={openEndpoint}
+              activeEndpointId={activeEndpointId}
+              onRename={() => setRenameFolder({ tag: apiGroup.tag, label: apiGroup.label })}
+            />
           ))
         )}
       </SidebarContent>
@@ -120,23 +102,107 @@ export const PlatformSidebar = () => {
           </p>
         </div>
       </SidebarFooter>
+
+      {renameFolder && (
+        <DialogRenameFolder
+          workspaceId={activeWorkspace.id}
+          tag={renameFolder.tag}
+          folderName={renameFolder.label}
+          open
+          onOpenChange={(open) => !open && setRenameFolder(null)}
+        />
+      )}
     </Sidebar>
   );
 };
 
 type SidebarEndpoint = Pick<ApiEndpoint, 'method' | 'path' | 'summary'>;
-type SidebarGroup = { tag: string; endpoints: SidebarEndpoint[] };
+type SidebarGroup = { tag: string; label: string; endpoints: SidebarEndpoint[] };
 
 const filterGroups = (groups: SidebarGroup[], query: string): SidebarGroup[] => {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return groups;
 
   return groups
-    .map((group) => ({
-      ...group,
-      endpoints: group.endpoints.filter((endpoint) =>
-        [group.tag, endpoint.path, endpoint.method].some((value) => value.toLowerCase().includes(normalizedQuery))
+    .map((apiGroup) => ({
+      ...apiGroup,
+      endpoints: apiGroup.endpoints.filter((endpoint) =>
+        [apiGroup.label, apiGroup.tag, endpoint.path, endpoint.method].some((value) =>
+          value.toLowerCase().includes(normalizedQuery)
+        )
       ),
     }))
-    .filter((group) => group.endpoints.length > 0);
+    .filter((apiGroup) => apiGroup.endpoints.length > 0);
+};
+
+type FolderItemProps = {
+  group: SidebarGroup;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelectEndpoint: (endpointId: string) => void;
+  activeEndpointId: string | null;
+  onRename: () => void;
+};
+
+const FolderItem = ({
+  group,
+  isOpen,
+  onOpenChange,
+  onSelectEndpoint,
+  activeEndpointId,
+  onRename,
+}: FolderItemProps) => {
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <Collapsible open={isOpen} onOpenChange={onOpenChange} className="group/collapsible">
+          <SidebarGroup className="py-0">
+            <CollapsibleTrigger className="text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-8 w-full items-center gap-2 rounded-md px-2 text-xs font-medium transition-colors group-data-[collapsible=icon]:hidden">
+              <Folder className="size-4" />
+
+              <SidebarGroupLabel
+                className="h-auto flex-1 p-0"
+                title={group.tag !== group.label ? group.tag : undefined}
+              >
+                {group.label}
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+
+            <CollapsibleContent className="ml-2">
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.endpoints.map((endpoint) => (
+                    <SidebarMenuItem key={`${endpoint.method}:${endpoint.path}`}>
+                      <SidebarMenuButton
+                        isActive={activeEndpointId === `${endpoint.method}:${endpoint.path}`}
+                        tooltip={`${endpoint.method.toUpperCase()} ${endpoint.path}`}
+                        onClick={() => onSelectEndpoint(`${endpoint.method}:${endpoint.path}`)}
+                      >
+                        <Badge
+                          className={cn(
+                            'h-4.5 w-11 text-[0.6rem] font-semibold uppercase opacity-70',
+                            methodBadgeClass(endpoint.method)
+                          )}
+                        >
+                          {endpoint.method}
+                        </Badge>
+
+                        <span title={endpoint.summary}>{endpoint.path}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </SidebarGroup>
+        </Collapsible>
+      </ContextMenuTrigger>
+
+      <ContextMenuContent>
+        <ContextMenuItem onClick={onRename}>
+          <Pencil /> Rename folder
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
 };

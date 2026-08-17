@@ -94,6 +94,7 @@ export type Workspace = {
   manualEndpoints: ApiEndpointDetail[];
   environments: Environment[];
   activeEnvironmentId: string;
+  folderNames?: Record<string, string>;
 };
 
 export type Environment = {
@@ -110,5 +111,6 @@ export type WorkspaceState = {
   selectWorkspace: (id: string) => void;
   setWorkspaceSpec: (id: string, spec: string) => void;
   addManualEndpoint: (id: string, endpoint: ApiEndpointDetail) => void;
+  renameFolder: (workspaceId: string, tag: string, name: string) => boolean;
   selectEnvironment: (workspaceId: string, environmentId: string) => void;
 };
