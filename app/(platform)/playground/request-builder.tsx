@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { Check, Copy, KeyRound, Link2, Play, Plus, Trash2 } from 'lucide-react';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -9,6 +9,7 @@ import { Label } from '~/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/css';
+import { JsonEditor } from '~/components/common/json-editor';
 import { ApiEndpointDetail, PlaygroundRequest, RequestParameter, SchemaObject } from '../types';
 import {
   DropdownMenu,
@@ -226,13 +227,15 @@ export const RequestBuilder = ({
                 <h3 className="text-sm font-medium">Request headers</h3>
                 <p className="text-muted-foreground text-xs">Headers are sent with the request when enabled.</p>
               </div>
+
               <Button size="sm" variant="outline" onClick={addHeader}>
                 <Plus data-icon="inline-start" />
                 Add header
               </Button>
             </div>
+
             <div className="overflow-hidden rounded-lg border">
-              <div className="bg-muted/40 text-muted-foreground grid grid-cols-[28px_1fr_1fr_36px] gap-2 px-3 py-2 text-[11px] font-medium tracking-wider uppercase">
+              <div className="bg-muted text-muted-foreground grid grid-cols-[28px_1fr_1fr_36px] gap-2 px-3 py-2 text-[11px] font-medium tracking-wider uppercase">
                 <span />
                 <span>Key</span>
                 <span>Value</span>
@@ -317,84 +320,6 @@ export const RequestBuilder = ({
       </div>
     </section>
   );
-};
-
-const JsonEditor = ({
-  value,
-  onChange,
-  hasError,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  hasError: boolean;
-}) => {
-  const highlightRef = useRef<HTMLPreElement>(null);
-
-  const syncScroll = (event: React.UIEvent<HTMLTextAreaElement>) => {
-    if (!highlightRef.current) return;
-    highlightRef.current.scrollTop = event.currentTarget.scrollTop;
-    highlightRef.current.scrollLeft = event.currentTarget.scrollLeft;
-  };
-
-  return (
-    <div
-      className={cn(
-        'bg-muted/20 focus-within:ring-ring/50 relative min-h-64 overflow-hidden rounded-lg border focus-within:ring-3',
-        hasError ? 'border-destructive' : 'border-input focus-within:border-ring'
-      )}
-    >
-      <pre
-        ref={highlightRef}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 m-0 overflow-hidden p-4 font-mono text-xs leading-normal wrap-break-word whitespace-pre-wrap"
-      >
-        {highlightJson(value)}
-      </pre>
-
-      <textarea
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onScroll={syncScroll}
-        className="caret-foreground selection:bg-primary/20 relative block min-h-64 w-full resize-y overflow-auto bg-transparent p-4 font-mono text-xs leading-normal text-transparent outline-none"
-        spellCheck={false}
-        aria-label="Request body"
-        aria-invalid={hasError}
-      />
-    </div>
-  );
-};
-
-const highlightJson = (value: string): ReactNode[] => {
-  const tokens: ReactNode[] = [];
-  const tokenPattern = /("(?:\\.|[^"\\])*")|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|(true|false|null)|([{}[\],:])/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = tokenPattern.exec(value))) {
-    if (match.index > lastIndex) tokens.push(value.slice(lastIndex, match.index));
-
-    const token = match[0];
-    const isKey = match[1] && /^\s*:/.test(value.slice(tokenPattern.lastIndex));
-    const className = isKey
-      ? 'text-sky-600 dark:text-sky-400'
-      : match[1]
-        ? 'text-emerald-600 dark:text-emerald-400'
-        : match[2]
-          ? 'text-amber-600 dark:text-amber-400'
-          : match[3]
-            ? 'text-violet-600 dark:text-violet-400'
-            : 'text-muted-foreground';
-
-    tokens.push(
-      <span key={`${match.index}-${token}`} className={className}>
-        {token}
-      </span>
-    );
-    lastIndex = tokenPattern.lastIndex;
-  }
-
-  if (lastIndex < value.length) tokens.push(value.slice(lastIndex));
-  return tokens;
 };
 
 const ParameterSection = ({

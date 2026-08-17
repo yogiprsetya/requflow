@@ -41,13 +41,7 @@ export const ResponseViewer = ({
         </div>
 
         <Badge variant={response?.error ? 'destructive' : 'secondary'}>
-          {isLoading
-            ? 'Sending'
-            : response
-              ? response.error
-                ? 'Error'
-                : response.statusText || response.status
-              : 'Idle'}
+          {getStatusLabel(response, isLoading)}
         </Badge>
       </div>
 
@@ -93,11 +87,11 @@ export const ResponseViewer = ({
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => setExpandAll(expandAll !== true)}
-                aria-label={expandAll === true ? 'Collapse all JSON nodes' : 'Expand all JSON nodes'}
+                onClick={() => setExpandAll((expanded) => !expanded)}
+                aria-label={expandAll ? 'Collapse all JSON nodes' : 'Expand all JSON nodes'}
               >
                 <ChevronsUpDown />
-                <span className="hidden sm:inline">{expandAll === true ? 'Collapse' : 'Expand'}</span>
+                <span className="hidden sm:inline">{expandAll ? 'Collapse' : 'Expand'}</span>
               </Button>
             )}
           </div>
@@ -115,6 +109,13 @@ export const ResponseViewer = ({
       </div>
     </section>
   );
+};
+
+const getStatusLabel = (response: PlaygroundResponse | null, isLoading: boolean): string => {
+  if (isLoading) return 'Sending';
+  if (!response) return 'Idle';
+  if (response.error) return 'Error';
+  return response.statusText || String(response.status);
 };
 
 const JsonTree = ({ value, expandAll }: { value: unknown; expandAll: boolean | null }) => (

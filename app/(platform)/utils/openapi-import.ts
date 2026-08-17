@@ -57,7 +57,7 @@ export const importSpecFromUrl = async (value: string, options: ImportSpecOption
 export const validateImportedSpec = (source: string): string => {
   const result = validateOpenApiSpec(source);
   if (!result.valid || !result.spec) {
-    throw new Error(result.errors.map(({ path, message }) => (path ? `${path}: ${message}` : message)).join(' '));
+    throw new Error(formatValidationErrors(result.errors));
   }
 
   return JSON.stringify(result.spec);
@@ -70,19 +70,21 @@ const readResponseText = async (response: Response, maxBytes: number): Promise<s
   const decoder = new TextDecoder();
   const chunks: string[] = [];
   let totalBytes = 0;
+  let done = false;
 
   try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    while (!done) {
+      const chunk = await reader.read();
+      done = chunk.done;
+      if (done || !chunk.value) continue;
 
-      totalBytes += value.byteLength;
+      totalBytes += chunk.value.byteLength;
       if (totalBytes > maxBytes) {
         await reader.cancel();
         throw new Error(`The OpenAPI response must be smaller than ${formatMegabytes(maxBytes)}.`);
       }
 
-      chunks.push(decoder.decode(value, { stream: true }));
+      chunks.push(decoder.decode(chunk.value, { stream: true }));
     }
 
     chunks.push(decoder.decode());
@@ -91,6 +93,9 @@ const readResponseText = async (response: Response, maxBytes: number): Promise<s
     reader.releaseLock();
   }
 };
+
+const formatValidationErrors = (errors: { path?: string; message: string }[]): string =>
+  errors.map(({ path, message }) => (path ? `${path}: ${message}` : message)).join(' ');
 
 const parseHttpUrl = (value: string): URL => {
   try {

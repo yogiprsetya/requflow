@@ -43,12 +43,7 @@ export const executeRequest = async (
       body: null,
       durationMs: Math.round(performance.now() - startedAt),
       sizeBytes: 0,
-      error:
-        error instanceof DOMException && error.name === 'AbortError'
-          ? 'The request timed out or was cancelled.'
-          : error instanceof Error
-            ? error.message
-            : 'Unable to send request.',
+      error: formatRequestError(error),
     };
   } finally {
     window.clearTimeout(timeout);
@@ -63,6 +58,14 @@ const parseResponseBody = (body: string, contentType: string): unknown => {
   } catch {
     return body;
   }
+};
+
+const formatRequestError = (error: unknown): string => {
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return 'The request timed out or was cancelled.';
+  }
+  if (error instanceof Error) return error.message;
+  return 'Unable to send request.';
 };
 
 const combineSignals = (first: AbortSignal, second: AbortSignal): AbortSignal => {

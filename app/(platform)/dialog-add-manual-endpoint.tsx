@@ -36,10 +36,11 @@ const NEW_FOLDER = 'Create new folder';
 const collectFolders = (workspace: ReturnType<typeof getActiveWorkspace> | undefined): string[] => {
   if (!workspace) return [];
 
-  const specTags = workspace.spec ? parseStoredSpec(workspace.spec).flatMap((endpoint) => endpoint.tags) : [];
-  const manualTags = (workspace.manualEndpoints ?? []).flatMap((endpoint) => endpoint.tags);
+  const specEndpoints = workspace.spec ? parseStoredSpec(workspace.spec) : [];
+  const manualEndpoints = workspace.manualEndpoints ?? [];
+  const tags = [...specEndpoints, ...manualEndpoints].flatMap((endpoint) => endpoint.tags);
 
-  return Array.from(new Set([...specTags, ...manualTags].filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  return Array.from(new Set(tags.filter(Boolean))).sort((a, b) => a.localeCompare(b));
 };
 
 export const AddManualEndpointDialog = ({

@@ -40,7 +40,7 @@ export const removeWorkspace = (
 
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       workspaces: [defaultWorkspace],
       activeWorkspaceId: defaultWorkspace.id,
       createWorkspace: (name) => {
@@ -66,25 +66,19 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         if (!normalizedName) return false;
 
         let renamed = false;
-        set((state) => ({
-          workspaces: state.workspaces.map((workspace) => {
-            if (workspace.id !== id) return workspace;
-            renamed = true;
-            return { ...workspace, name: normalizedName };
-          }),
-        }));
+        const nextWorkspaces = get().workspaces.map((workspace) => {
+          if (workspace.id !== id) return workspace;
+          renamed = true;
+          return { ...workspace, name: normalizedName };
+        });
+        if (renamed) set({ workspaces: nextWorkspaces });
         return renamed;
       },
       deleteWorkspace: (id) => {
-        let deleted = false;
-        set((state) => {
-          const nextState = removeWorkspace(state.workspaces, state.activeWorkspaceId, id);
-          deleted = nextState.deleted;
-          return nextState.deleted
-            ? { workspaces: nextState.workspaces, activeWorkspaceId: nextState.activeWorkspaceId }
-            : state;
-        });
-        return deleted;
+        const next = removeWorkspace(get().workspaces, get().activeWorkspaceId, id);
+        if (!next.deleted) return false;
+        set({ workspaces: next.workspaces, activeWorkspaceId: next.activeWorkspaceId });
+        return true;
       },
       selectWorkspace: (id) =>
         set((state) =>
